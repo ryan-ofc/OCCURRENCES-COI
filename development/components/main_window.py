@@ -78,7 +78,20 @@ class CMainWindow(QMainWindow, Instances):
             self.setIcon(self._icon)
 
     def __style__(self):
-        self.update_styles()
+        label = f"""
+            QLabel {{
+                color: {self._text_color};
+            }}
+        """ if self._text_color else ""
+
+        style_sheet = f"""
+            #{self._objectName} {{
+                color: {self._text_color};
+                background-color: {self._bg_color};
+            }}
+            {label}
+            {self._toolTip.styleSheet()}
+        """
 
     def update_styles(self):
         label = f"""
