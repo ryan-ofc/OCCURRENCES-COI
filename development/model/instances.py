@@ -1,5 +1,7 @@
 from development.styles.colors import Colors
 from development.styles.border import Border
+from development.styles.border_radius import BorderRadius
+from development.styles.padding import Padding
 
 
 class Instances:
@@ -20,6 +22,9 @@ class Instances:
         hover_bg_color: Colors = None,
         hover_text_color: Colors = None,
         hover_border: Border = None,
+        border: Border = None,
+        border_radius: BorderRadius = None,
+        padding: Padding = None,
     ):
         self._objectName = objectName
         self._spacing = spacing
@@ -36,3 +41,6 @@ class Instances:
         self._icon = icon
         self._hover_bg_color = hover_bg_color
         self._hover_border = hover_border
+        self._border = border
+        self._border_radius = border_radius
+        self._padding = padding

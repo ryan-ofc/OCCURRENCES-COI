@@ -14,6 +14,8 @@ class ToggleTheme(QPushButton):
         parent: QWidget,
         icon_light: str,
         icon_dark: str,
+        bg_light: str,
+        bg_dark: str,
         iconSize: list = (42, 42),
     ):
         super().__init__(parent=parent)
@@ -22,17 +24,17 @@ class ToggleTheme(QPushButton):
         self._icon_dark = icon_dark
         self._iconSize = [iconSize[0], iconSize[1]]
         self.default_theme = True
-        self.bg_light = "#0082D8"
-        self.bg_dark = "#005892"
+        self.bg_light = bg_light
+        self.bg_dark = bg_dark
         self.border_radius = (self._iconSize[0] // 2) + 2
 
-        self.setToolTip("Dark ativo")
+        self.setToolTip("Light ativo")
 
         self.setFixedSize(self._iconSize[0] + 5, self._iconSize[1] + 5)
         self.setStyleSheet(
             f"""
                 QPushButton {{
-                    background-color: {self.bg_dark}; 
+                    background-color: {self.bg_light}; 
                     border-radius: {self.border_radius}px;
                     color: white; font-size: 30px;
             }}
@@ -41,7 +43,7 @@ class ToggleTheme(QPushButton):
                     color: #ffffff;
                     border: 1px solid #007AAF;
                     padding: 5px;
-                    border-radius: 3px;
+                    border-radius: {self.border_radius}px;
                     font-size: 12px;
             }}
             """
@@ -73,11 +75,38 @@ class ToggleTheme(QPushButton):
         """Switches the theme and updates the icon."""
         self.default_theme = not self.default_theme
 
-        self.setStyleSheet(
-            f"background-color: {self.bg_dark}; border-radius: {self.border_radius}; color: white; font-size: 30px;"
-            if self.default_theme
-            else f"background-color: {self.bg_light}; border-radius: {self.border_radius}; color: white; font-size: 30px;"
-        )
+        light = f"""
+                QPushButton {{
+                    background-color: {self.bg_light}; 
+                    border-radius: {self.border_radius}px;
+                    color: white; font-size: 30px;
+            }}
+                QToolTip {{
+                    background-color: #0097D8;
+                    color: #ffffff;
+                    border: 1px solid #007AAF;
+                    padding: 5px;
+                    border-radius: {self.border_radius}px;
+                    font-size: 12px;
+            }}
+            """
+        dark = f"""
+                QPushButton {{
+                    background-color: {self.bg_dark}; 
+                    border-radius: {self.border_radius}px;
+                    color: white; font-size: 30px;
+            }}
+                QToolTip {{
+                    background-color: #0097D8;
+                    color: #ffffff;
+                    border: 1px solid #007AAF;
+                    padding: 5px;
+                    border-radius: {self.border_radius}px;
+                    font-size: 12px;
+            }}
+            """
 
-        self.setToolTip("Dark ativo" if self.default_theme else "Light ativo")
+        self.setStyleSheet(light if self.default_theme else dark)
+
+        self.setToolTip("Light ativo" if self.default_theme else "Dark ativo")
         self.set_icon(self._icon_light if self.default_theme else self._icon_dark)

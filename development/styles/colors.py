@@ -8,29 +8,29 @@ class rgba:
     def __repr__(self):
         return f"rgba({self.r}, {self.g}, {self.b}, {self.a})"
     
-    def adjust_tonality(self, percentage: int = 50):
-        """Ajusta a tonalidade de cada componente de cor individualmente com base em um percentual.
+    def adjust_tonality(self, percentage: int = 50, yourself: bool = False):
+        """Ajusta a tonalidade da cor sem modificar a instância original (a menos que `yourself=True`).
+        
         A cor escurece abaixo de 50% até 0% (preto) e clareia acima de 50% até 100% (branco).
         """
 
         percentage = max(0, min(100, percentage))
 
         if percentage == 50:
-            return self
+            return self if yourself else rgba(self.r, self.g, self.b, self.a)
+
+        factor = (abs(percentage - 50) * 2)
         
         if percentage > 50:
-            factor = (percentage - 50) * 2
-            self.r = min(255, self.r + factor)
-            self.g = min(255, self.g + factor)
-            self.b = min(255, self.b + factor)
+            r, g, b = min(255, self.r + factor), min(255, self.g + factor), min(255, self.b + factor)
+        else:
+            r, g, b = max(0, self.r - factor), max(0, self.g - factor), max(0, self.b - factor)
 
-        elif percentage < 50:
-            factor = (50 - percentage) * 2
-            self.r = max(0, self.r - factor)
-            self.g = max(0, self.g - factor)
-            self.b = max(0, self.b - factor)
+        if yourself:
+            self.r, self.g, self.b = r, g, b
+            return self
 
-        return self
+        return rgba(r, g, b, self.a)
 
 
 def adjust_color(color: rgba, factor, is_percentage=False):
@@ -55,7 +55,7 @@ def adjust_color(color: rgba, factor, is_percentage=False):
 class Colors:
     red = rgba(255, 0, 0)
     green = rgba(0, 255, 0)
-    blue = rgba(0, 0, 255)
+    blue = rgba(0, 119, 255)
     black = rgba(0, 0, 0)
     white = rgba(255, 255, 255)
     gray = rgba(128, 128, 128)

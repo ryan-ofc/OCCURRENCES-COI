@@ -1,12 +1,13 @@
-from PySide6.QtWidgets import QFrame
-from development.styles import Colors, Border, type_border, Border, BorderRadius
+from PySide6.QtWidgets import QLineEdit, QLabel, QVBoxLayout, QWidget
+from development.styles import Colors, Border, type_border, Border, Padding, BorderRadius
 from development.elements import CTooltip
 from development.model import Instances
 
-class CFrame(QFrame, Instances):
+class CInput(QWidget, Instances):
     def __init__(
         self,
-        objectName: str = "CFrame",
+        label: str = "",
+        objectName: str = "CInput",
         width: int = None,
         height: int = None,
         minimumWidth: int = None,
@@ -14,12 +15,15 @@ class CFrame(QFrame, Instances):
         maximumWidth: int = 4096,
         maximumHeight: int = 2160,
         bg_color: Colors = Colors.white,
+        text_color: Colors = Colors.black.adjust_tonality(75),
         border: Border = None,
-        border_radius: BorderRadius = None,
+        border_radius: BorderRadius = BorderRadius(all=5),
         hover_bg_color: Colors = None,
         hover_border: Border = None,
+        padding: Padding = Padding(all=8),
+
     ):
-        QFrame.__init__(self)
+        super().__init__()
         Instances.__init__(
             self,
             objectName=objectName,
@@ -33,8 +37,14 @@ class CFrame(QFrame, Instances):
             hover_bg_color=hover_bg_color,
             hover_border=hover_border,
             border=border,
+            text_color=text_color,
+            padding=padding,
             border_radius=border_radius,
         )
+        
+        self.label = QLabel(label)
+        self.input_field = QLineEdit()
+        self.input_field.setObjectName(objectName)
         
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
@@ -48,28 +58,34 @@ class CFrame(QFrame, Instances):
             padding=5,
             font_size=12,
         )
-
+        
         self.__setup__()
 
     def __setup__(self):
         self.__config__()
         self.__style__()
-
+        self.__layout__()
+    
     def __config__(self):
-        self.setObjectName(self._objectName)
-
         if self._width is not None and self._height is not None:
             self.resize(self._width, self._height)
-
+        
         if self._minimumWidth is not None and self._minimumHeight is not None:
             self.setMinimumSize(self._minimumWidth, self._minimumHeight)
-
+        
         if self._maximumWidth is not None and self._maximumHeight is not None:
             self.setMaximumSize(self._maximumWidth, self._maximumHeight)
-
+    
     def __style__(self):
         self.update_styles()
-
+    
+    def __layout__(self):
+        layout = QVBoxLayout()
+        layout.setSpacing(4)
+        layout.addWidget(self.label)
+        layout.addWidget(self.input_field)
+        self.setLayout(layout)
+    
     def update_styles(self):
         hover_style = (
             f"""
@@ -132,6 +148,14 @@ class CFrame(QFrame, Instances):
                 color: {self._text_color};
                 background-color: {self._bg_color};
             }}
+            QLabel {{
+                font-size: 11px;
+                padding-left: 5px;
+                color: {self._text_color};
+            }}
+            #{self._objectName}:focus {{
+                border: 1px solid gray;
+            }}
             {hover_style}
             {border}
             {border_radius}
@@ -140,5 +164,6 @@ class CFrame(QFrame, Instances):
             {self._toolTip.styleSheet()}
         """
         self.setStyleSheet(style_sheet)
+        self.input_field.setStyleSheet(style_sheet)
+        self.label.setStyleSheet(style_sheet)
         self.update()
-
