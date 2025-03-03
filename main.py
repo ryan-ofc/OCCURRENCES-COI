@@ -14,6 +14,7 @@ from development import (
     type_border,
     Qt,
     SQLiteManager,
+    CTable,
     os,
     time,
     sys,
@@ -50,21 +51,25 @@ class App(CMainWindow):
         self.theme: Themes = Themes.light
         self.theme_light = Themes.light
         self.theme_dark = Themes.dark
+        self.search = None
+        self.page = 1
+        self.rows = 15
         self.central_widget = CFrame(
             maximumWidth=4096,
             maximumHeight=2160,
             bg_color=self._bg_color,
         )
         self.setCentralWidget(self.central_widget)
+        self.create_db()
         self.__ui__()
         self.__layout__()
-        self.create_db()
 
     def __ui__(self):
         self.ui_navbar()
         self.ui_content()
         self.ui_toggle_theme()
         self.ui_occurrence_form()
+        self.ui_table_occurrences()
 
     def __layout__(self):
         layout = CLayout(self.central_widget)
@@ -75,6 +80,7 @@ class App(CMainWindow):
         self.main_layout.addWidget(self.content)
 
         self.content_layout.addWidget(self.occurrence_form)
+        self.content_layout.addWidget(self.table_occurrences)
 
     def ui_toggle_theme(self):
         self.btn_toggle_theme = ToggleTheme(
@@ -93,14 +99,16 @@ class App(CMainWindow):
         self.content = CFrame(bg_color=self._bg_color)
 
         layout = CLayout(self.content)
-        self.content_layout = layout.horizontal(spacing=10)
+        self.content_layout = layout.horizontal(spacing=10, margins=(5, 5, 5, 5))
 
     def ui_occurrence_form(self):
         self.occurrence_form = OccurrenceForm(
             bg_color=self.theme_light.occurrenceForm.bg_color,
             text_color=self.theme_light.occurrenceForm.text_color,
-            maximumWidth=500,
-            maximumHeight=600,
+            minimumWidth=485,
+            minimumHeight=585,
+            maximumWidth=485,
+            maximumHeight=585,
             border_radius=BorderRadius(all=8),
             border=Border(
                 pixel=1,
@@ -108,6 +116,24 @@ class App(CMainWindow):
                 color=Colors.gray.adjust_tonality(80),
             ),
         )
+
+    def ui_table_occurrences(self):
+        self.table_occurrences = CTable(
+            columns=8,
+            rows=len(self.data_occurrences),
+            bg_color=self.theme_light.occurrenceForm.bg_color,
+            text_color=self.theme_light.occurrenceForm.text_color,
+            maximumHeight=585,
+            border_radius=BorderRadius(all=8),
+            border=Border(
+                pixel=1,
+                type_border=type_border.solid,
+                color=Colors.gray.adjust_tonality(80),
+            ),
+        )
+        self.table_occurrences.set_headers(["Nome","Telefone","Rodovia","Km","Sentido","Problema","Encontra-se","Ponto de referência"])
+        for oc in self.data_occurrences:
+            self.table_occurrences.add_row([oc.name, oc.phone, oc.highway, oc.km, oc.direction, oc.problem, oc.local, oc.reference_point])
 
     def setThemeLight(self):
         light = self.theme_light
@@ -160,7 +186,12 @@ class App(CMainWindow):
         else:
             self.btn_toggle_theme.show()
 
-        # print(self.width(), self.height())
+        if self.width() <= 1000 and self.height() >= 600:
+            self.table_occurrences.hide()
+        else:
+            self.table_occurrences.show()
+
+        print(self.width(), self.height())
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return and event.modifiers() & Qt.ControlModifier:
@@ -169,8 +200,8 @@ class App(CMainWindow):
 
         elif event.key() == Qt.Key_Backspace and event.modifiers() & Qt.ControlModifier:
             # Ação para Ctrl + Backspace
-            self.occurrence_form.clear_form()       
-            
+            self.occurrence_form.clear_form()
+
         else:
             pass
 
@@ -182,7 +213,8 @@ class App(CMainWindow):
             os.makedirs(db_dir)
 
         with SQLiteManager(db_name=db_path) as db:
-            db.execute("""
+            db.execute(
+                """
                 CREATE TABLE IF NOT EXISTS occurrences (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT,
@@ -200,7 +232,11 @@ class App(CMainWindow):
                     observations TEXT,
                     is_vehicle BOOLEAN
                 );
-            """)
+            """
+            )
+
+            responseSearch = db.searchPagination(search=self.search,page=self.page,rows=self.rows)
+            self.data_occurrences = responseSearch.data
 
 
 if __name__ == "__main__":

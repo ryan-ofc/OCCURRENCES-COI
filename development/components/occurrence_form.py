@@ -2,7 +2,6 @@ from PySide6.QtWidgets import QFrame, QSpacerItem, QSizePolicy
 from development.styles import Colors, Border, type_border, Border, BorderRadius, Padding
 from development.elements import CTooltip, CLayout, CFrame, CInput, CButton, CTextArea, CSwitch, CMessageBox
 from development.model import Instances
-from development.utils import Occurrence
 
 
 class OccurrenceForm(QFrame, Instances):
@@ -160,49 +159,54 @@ class OccurrenceForm(QFrame, Instances):
     def save_form(self):
         self.form_occurrence = {
             "is_vehicle": self.is_vehicle,
-            "name": self.input_name.text() or None,
-            "number_phone": self.input_phone.text() or None,
-            "highway": self.input_highway.text() or None,
-            "km": self.input_km.text() or None,
-            "direction": self.input_direction.text() or None,
-            "vehicle_model": None,
-            "vehicle_color": None,
-            "vehicle_license_plate": None,
-            "vehicle_occupants": None,
-            "problem": self.input_problem.text() or None,
-            "local": self.input_local.text() or None,
-            "reference_point": self.input_reference_point.text() or None,
-            "description": self.input_description.text() or None,
+            "name": self.input_name.text() or "Usuário",
+            "number_phone": self.input_phone.text() or "N/A",
+            "highway": self.input_highway.text() or "",
+            "km": self.input_km.text() or "",
+            "direction": self.input_direction.text() or "",
+            "vehicle_model": "N/A",
+            "vehicle_color": "N/A",
+            "vehicle_license_plate": "N/A",
+            "vehicle_occupants": "N/A",
+            "problem": self.input_problem.text() or "",
+            "local": self.input_local.text() or "N/A",
+            "reference_point": self.input_reference_point.text() or "N/A",
+            "description": self.input_description.text() or "",
         }
         if self.is_vehicle:
-            self.form_occurrence["vehicle_model"] = self.input_vehicle_model.text()
-            self.form_occurrence["vehicle_color"] = self.input_vehicle_color.text()
-            self.form_occurrence["vehicle_license_plate"] = self.input_vehicle_license_plate.text()
-            self.form_occurrence["vehicle_occupants"] = self.input_vehicle_occupants.text()
+            self.form_occurrence["vehicle_model"] = self.input_vehicle_model.text() if self.input_vehicle_model.text() else "N/A"
+            self.form_occurrence["vehicle_color"] = self.input_vehicle_color.text() if self.input_vehicle_color.text() else "N/A"
+            self.form_occurrence["vehicle_license_plate"] = self.input_vehicle_license_plate.text() if self.input_vehicle_license_plate.text() else "N/A"
+            self.form_occurrence["vehicle_occupants"] = self.input_vehicle_occupants.text() if self.input_vehicle_occupants.text() else "N/A"
 
         try:
+            from development.modules import Occurrence
             self.new_occurrence = Occurrence(
-            name=self.form_occurrence.get("name"),
-            phone=self.form_occurrence.get("number_phone"),
-            highway=self.form_occurrence.get("highway"),
-            km=self.form_occurrence.get("km"),
-            direction=self.form_occurrence.get("direction"),
-            vehicle=self.form_occurrence.get("vehicle_model"),
-            color=self.form_occurrence.get("vehicle_color"),
-            license_plate=self.form_occurrence.get("vehicle_license_plate"),
-            occupantes=self.form_occurrence.get("vehicle_occupants"),
-            problem=self.form_occurrence.get("problem"),
-            local=self.form_occurrence.get("local"),
-            reference_point=self.form_occurrence.get("reference_point"),
-            observations=self.form_occurrence.get("description"),
-            is_vehicle=self.is_vehicle,
-        )
+                name=self.form_occurrence.get("name"),
+                phone=self.form_occurrence.get("number_phone"),
+                highway=self.form_occurrence.get("highway"),
+                km=self.form_occurrence.get("km"),
+                direction=self.form_occurrence.get("direction"),
+                vehicle=self.form_occurrence.get("vehicle_model"),
+                color=self.form_occurrence.get("vehicle_color"),
+                license_plate=self.form_occurrence.get("vehicle_license_plate"),
+                occupantes=self.form_occurrence.get("vehicle_occupants"),
+                problem=self.form_occurrence.get("problem"),
+                local=self.form_occurrence.get("local"),
+                reference_point=self.form_occurrence.get("reference_point"),
+                observations=self.form_occurrence.get("description"),
+                is_vehicle=self.is_vehicle,
+            )
 
             self.new_occurrence.save()
+            self.new_occurrence.clipboard()
             self.clear_form()
+            message = CMessageBox(self,title="Notificação",text="Formulário salvo com sucesso!")
+            message.show()
 
         except Exception as e:
-            raise e
+            message = CMessageBox(self,title="Atenção",text=str(e), icon_type=CMessageBox.Icon.critical)
+            message.show()
     
     def alter_form(self, event):
         self.is_vehicle = not self.is_vehicle

@@ -23,7 +23,7 @@ class CMessageBox(QDialog):
         text: str,
         buttons: list[ButtonRole] = [
             ButtonRole(
-                title="Entendido",
+                title="Ok",
                 name="Yes",
                 role=QMessageBox.ButtonRole.YesRole,
             )
@@ -37,7 +37,7 @@ class CMessageBox(QDialog):
         self.icon_type = icon_type
 
         self.setWindowTitle(self.title)
-        self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
 
         layout = QVBoxLayout(self)
 
@@ -47,6 +47,11 @@ class CMessageBox(QDialog):
 
         text_label = QLabel(self.text)
         layout.addWidget(text_label, alignment=Qt.AlignCenter)
+
+        if self.is_dark_theme():
+            text_label.setStyleSheet("color: white;")
+        else:
+            text_label.setStyleSheet("color: black;")
 
         button_layout = QHBoxLayout()
         button_layout.setAlignment(Qt.AlignCenter)
@@ -83,6 +88,10 @@ class CMessageBox(QDialog):
                 role=QMessageBox.ButtonRole.YesRole,
             )
         ]
+    
+    def is_dark_theme(self) -> bool:
+        bg_color = self.palette().color(self.backgroundRole())
+        return bg_color.lightness() < 128
     
     class Icon:
         information = QMessageBox.Icon.Information
