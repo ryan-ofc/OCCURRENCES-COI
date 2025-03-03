@@ -89,7 +89,13 @@ class CInput(QWidget, Instances):
         layout.addWidget(self.label)
         layout.addWidget(self.input_field)
         self.setLayout(layout)
+
+    def clear(self):
+        self.input_field.clear()
     
+    def text(self):
+        return self.input_field.text()
+     
     def update_styles(self):
         hover_style = (
             f"""

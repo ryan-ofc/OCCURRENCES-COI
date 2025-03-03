@@ -87,6 +87,12 @@ class CTextArea(QWidget, Instances):
         layout.addWidget(self.text_area)
         self.setLayout(layout)
     
+    def clear(self):
+        self.text_area.clear()
+
+    def text(self):
+        return self.text_area.toPlainText()
+    
     def update_styles(self):
         hover_style = (
             f"""

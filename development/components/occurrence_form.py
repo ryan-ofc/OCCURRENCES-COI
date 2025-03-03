@@ -96,7 +96,6 @@ class OccurrenceForm(QFrame, Instances):
         self.main_layout.addWidget(self.form_box_6)
         self.main_layout.addWidget(self.form_box_7)
 
-
     def __ui__(self):
         self.ui_inputs()
         self.ui_boxes()
@@ -116,9 +115,70 @@ class OccurrenceForm(QFrame, Instances):
         self.input_reference_point = CInput(label="Ponto de referência", bg_color=self._input_bg_color)
         self.input_description = CTextArea(label="Observações", bg_color=self._input_bg_color)
 
-        self.btn_save = CButton(text="Salvar", bg_color=Colors.blue, text_color=Colors.white)
-        self.btn_clear = CButton(text="Limpar", bg_color=Colors.gray.adjust_tonality(60), text_color=Colors.white)
+        self.btn_save = CButton(text="Salvar", bg_color=Colors.blue, text_color=Colors.white, onClick=self.save_occurrence)
+        self.btn_clear = CButton(text="Limpar", bg_color=Colors.gray.adjust_tonality(60), text_color=Colors.white, onClick=self.clear_form)
         self.btn_alter = CSwitch(on_switch=self.alter_form)
+
+        self.btn_save.setToolTip("CTRL + ENTER")
+
+    def clear_form(self):
+        self.input_name.clear()
+        self.input_phone.clear()
+        self.input_highway.clear()
+        self.input_km.clear()
+        self.input_direction.clear()
+        self.input_problem.clear()
+        self.input_local.clear()
+        self.input_reference_point.clear()
+        self.input_description.clear()
+
+        if self.is_vehicle:
+            self.input_vehicle_model.clear()
+            self.input_vehicle_color.clear()
+            self.input_vehicle_license_plate.clear()
+            self.input_vehicle_occupants.clear()
+
+        self.form_occurrence = {
+            "name": None,
+            "number_phone": None,
+            "highway": None,
+            "km": None,
+            "direction": None,
+            "vehicle_model": None,
+            "vehicle_color": None,
+            "vehicle_license_plate": None,
+            "vehicle_occupants": None,
+            "problem": None,
+            "local": None,
+            "reference_point": None,
+            "description": None,
+        }
+
+    def save_occurrence(self):
+        self.form_occurrence = {
+            "is_vehicle": self.is_vehicle,
+            "name": self.input_name.text() or None,
+            "number_phone": self.input_phone.text() or None,
+            "highway": self.input_highway.text() or None,
+            "km": self.input_km.text() or None,
+            "direction": self.input_direction.text() or None,
+            "vehicle_model": None,
+            "vehicle_color": None,
+            "vehicle_license_plate": None,
+            "vehicle_occupants": None,
+            "problem": self.input_problem.text() or None,
+            "local": self.input_local.text() or None,
+            "reference_point": self.input_reference_point.text() or None,
+            "description": self.input_description.text() or None,
+        }
+        if self.is_vehicle:
+            self.form_occurrence["vehicle_model"] = self.input_vehicle_model.text()
+            self.form_occurrence["vehicle_color"] = self.input_vehicle_color.text()
+            self.form_occurrence["vehicle_license_plate"] = self.input_vehicle_license_plate.text()
+            self.form_occurrence["vehicle_occupants"] = self.input_vehicle_occupants.text()
+
+        self.new_occurrence = None
+        print(self.form_occurrence)
     
     def alter_form(self, event):
         self.is_vehicle = not self.is_vehicle
