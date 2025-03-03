@@ -1,11 +1,15 @@
 from PySide6.QtWidgets import QCheckBox, QWidget, QVBoxLayout, QApplication, QFrame
 from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint
+from development.styles import Colors, Border, type_border
+from development.elements import CTooltip
 
 
 class CSwitch(QCheckBox):
-    def __init__(self, on_switch=None, parent=None):
+    def __init__(self, on_switch=None, bg_color: Colors = Colors.gray, text_color: Colors = Colors.white, parent=None):
         super().__init__(parent)
         self.on_switch = on_switch
+        self._bg_color = bg_color
+        self._text_color = text_color
         self.stateChanged.connect(self.switch)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -17,25 +21,39 @@ class CSwitch(QCheckBox):
         self._circle.setFixedSize(24, 24)
         self._circle.setStyleSheet("background-color: white; border-radius: 12px;")
 
+        self._toolTip = CTooltip(
+            bg_color=self._bg_color,
+            color=self._text_color,
+            border=Border(
+                pixel=1,
+                type_border=type_border.solid,
+                color=self._text_color,
+            ),
+            border_radius=3,
+            padding=5,
+            font_size=12,
+        )
+
         # Estilo personalizado
         self.setStyleSheet(
-            """
-            CSwitch {
-                background-color: #ccc;
+            F"""
+            CSwitch {{
+                background-color: {self._bg_color};
                 border-radius: 15px;
                 border: 2px solid #ccc;
                 padding: 0px;
-            }
-            CSwitch:checked {
+            }}
+            CSwitch:checked {{
                 background-color: #4CAF50;
-            }
-            CSwitch::indicator {
+            }}
+            CSwitch::indicator {{
                 width: 0px;
                 height: 0px;
                 border: none;
                 padding: 0px;
                 margin: 0px;
-            }
+            }}
+            {self._toolTip.styleSheet()}
         """
         )
 

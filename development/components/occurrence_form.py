@@ -1,7 +1,8 @@
 from PySide6.QtWidgets import QFrame, QSpacerItem, QSizePolicy
 from development.styles import Colors, Border, type_border, Border, BorderRadius, Padding
-from development.elements import CTooltip, CLayout, CFrame, CInput, CButton, CTextArea, CSwitch
+from development.elements import CTooltip, CLayout, CFrame, CInput, CButton, CTextArea, CSwitch, CMessageBox
 from development.model import Instances
+from development.utils import Occurrence
 
 
 class OccurrenceForm(QFrame, Instances):
@@ -101,25 +102,27 @@ class OccurrenceForm(QFrame, Instances):
         self.ui_boxes()
 
     def ui_inputs(self):
-        self.input_name = CInput(label="Nome", bg_color=self._input_bg_color)
-        self.input_phone = CInput(label="Telefone", bg_color=self._input_bg_color)
-        self.input_highway = CInput(label="Rodovia", bg_color=self._input_bg_color)
-        self.input_km = CInput(label="Km", bg_color=self._input_bg_color)
-        self.input_direction = CInput(label="Sentido", bg_color=self._input_bg_color)
-        self.input_vehicle_model = CInput(label="Modelo", bg_color=self._input_bg_color)
-        self.input_vehicle_color = CInput(label="Cor", bg_color=self._input_bg_color)
-        self.input_vehicle_license_plate = CInput(label="Placa", bg_color=self._input_bg_color)
-        self.input_problem = CInput(label="Problema", bg_color=self._input_bg_color)
-        self.input_vehicle_occupants = CInput(label="Ocupantes", bg_color=self._input_bg_color)
-        self.input_local = CInput(label="Encontra-se", bg_color=self._input_bg_color)
-        self.input_reference_point = CInput(label="Ponto de referência", bg_color=self._input_bg_color)
+        self.input_name = CInput(label="Nome", bg_color=self._input_bg_color, icon_path="app/icons/svg/user.svg")
+        self.input_phone = CInput(label="Telefone", bg_color=self._input_bg_color, icon_path="app/icons/svg/phone.svg")
+        self.input_highway = CInput(label="Rodovia", bg_color=self._input_bg_color, icon_path="app/icons/svg/highway.svg")
+        self.input_km = CInput(label="Km", bg_color=self._input_bg_color, icon_path="app/icons/svg/km.svg")
+        self.input_direction = CInput(label="Sentido", bg_color=self._input_bg_color, icon_path="app/icons/svg/sentido.svg")
+        self.input_vehicle_model = CInput(label="Veículo", bg_color=self._input_bg_color, icon_path="app/icons/svg/carro.svg")
+        self.input_vehicle_color = CInput(label="Cor", bg_color=self._input_bg_color, icon_path="app/icons/svg/cor.svg")
+        self.input_vehicle_license_plate = CInput(label="Placa", bg_color=self._input_bg_color, icon_path="app/icons/svg/placa.svg")
+        self.input_problem = CInput(label="Problema", bg_color=self._input_bg_color, icon_path="app/icons/svg/sirene.svg")
+        self.input_vehicle_occupants = CInput(label="Ocupantes", bg_color=self._input_bg_color, icon_path="app/icons/svg/ocupantes.svg")
+        self.input_local = CInput(label="Encontra-se", bg_color=self._input_bg_color, icon_path="app/icons/svg/local.svg")
+        self.input_reference_point = CInput(label="Ponto de referência", bg_color=self._input_bg_color, icon_path="app/icons/svg/mapa.svg")
         self.input_description = CTextArea(label="Observações", bg_color=self._input_bg_color)
 
-        self.btn_save = CButton(text="Salvar", bg_color=Colors.blue, text_color=Colors.white, onClick=self.save_occurrence)
-        self.btn_clear = CButton(text="Limpar", bg_color=Colors.gray.adjust_tonality(60), text_color=Colors.white, onClick=self.clear_form)
+        self.btn_save = CButton(text="Salvar", bg_color=Colors.blue, text_color=Colors.white, onClick=self.confirm_save_form)
+        self.btn_clear = CButton(text="Limpar", bg_color=Colors.gray.adjust_tonality(60), text_color=Colors.white, onClick=self.confirm_clear_form)
         self.btn_alter = CSwitch(on_switch=self.alter_form)
 
         self.btn_save.setToolTip("CTRL + ENTER")
+        self.btn_clear.setToolTip("CTRL + BACKSPACE")
+        self.btn_alter.setToolTip("CTRL + TAB")
 
     def clear_form(self):
         self.input_name.clear()
@@ -154,7 +157,7 @@ class OccurrenceForm(QFrame, Instances):
             "description": None,
         }
 
-    def save_occurrence(self):
+    def save_form(self):
         self.form_occurrence = {
             "is_vehicle": self.is_vehicle,
             "name": self.input_name.text() or None,
@@ -177,8 +180,29 @@ class OccurrenceForm(QFrame, Instances):
             self.form_occurrence["vehicle_license_plate"] = self.input_vehicle_license_plate.text()
             self.form_occurrence["vehicle_occupants"] = self.input_vehicle_occupants.text()
 
-        self.new_occurrence = None
-        print(self.form_occurrence)
+        try:
+            self.new_occurrence = Occurrence(
+            name=self.form_occurrence.get("name"),
+            phone=self.form_occurrence.get("number_phone"),
+            highway=self.form_occurrence.get("highway"),
+            km=self.form_occurrence.get("km"),
+            direction=self.form_occurrence.get("direction"),
+            vehicle=self.form_occurrence.get("vehicle_model"),
+            color=self.form_occurrence.get("vehicle_color"),
+            license_plate=self.form_occurrence.get("vehicle_license_plate"),
+            occupantes=self.form_occurrence.get("vehicle_occupants"),
+            problem=self.form_occurrence.get("problem"),
+            local=self.form_occurrence.get("local"),
+            reference_point=self.form_occurrence.get("reference_point"),
+            observations=self.form_occurrence.get("description"),
+            is_vehicle=self.is_vehicle,
+        )
+
+            self.new_occurrence.save()
+            self.clear_form()
+
+        except Exception as e:
+            raise e
     
     def alter_form(self, event):
         self.is_vehicle = not self.is_vehicle
@@ -189,6 +213,18 @@ class OccurrenceForm(QFrame, Instances):
         else:
             self.form_box_3.show()
             self.input_vehicle_occupants.show()
+
+    def confirm_save_form(self):
+        message = CMessageBox(self,title="Confirmação",text="Deseja realmente salvar?", buttons=CMessageBox.double_choice(), icon_type=CMessageBox.Icon.information)
+        response = message.show()
+        if response == "Yes":
+            self.save_form()
+    
+    def confirm_clear_form(self):
+        message = CMessageBox(self,title="Confirmação",text="Deseja realmente limpar os campos?", buttons=CMessageBox.double_choice(), icon_type=CMessageBox.Icon.warning)
+        response = message.show()
+        if response == "Yes":
+            self.clear_form()
 
     def ui_boxes(self):
         self.form_box_1 = CFrame(bg_color=Colors.transparent,border_radius=BorderRadius(top_left=20,top_right=20))

@@ -6,3 +6,4 @@ from .custom_input import CInput
 from .custom_button import CButton
 from .custom_text_area import CTextArea
 from .custom_switch import CSwitch
+from .custom_messagebox import CMessageBox

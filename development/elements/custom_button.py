@@ -1,6 +1,8 @@
 from PySide6.QtWidgets import QPushButton
+from PySide6.QtCore import Qt
 from development.styles import Colors, Border, type_border, Padding, BorderRadius
 from development.model import Instances
+from development.elements import CTooltip
 
 class CButton(QPushButton, Instances):
     def __init__(
@@ -46,6 +48,19 @@ class CButton(QPushButton, Instances):
         if onClick:
             self.clicked.connect(onClick)
 
+        self._toolTip = CTooltip(
+            bg_color=self._bg_color,
+            color=self._text_color,
+            border=Border(
+                pixel=1,
+                type_border=type_border.solid,
+                color=self._text_color,
+            ),
+            border_radius=3,
+            padding=5,
+            font_size=12,
+        )
+
         self.__setup__()
 
     def __setup__(self):
@@ -61,6 +76,8 @@ class CButton(QPushButton, Instances):
         
         if self._maximumWidth is not None and self._maximumHeight is not None:
             self.setMaximumSize(self._maximumWidth, self._maximumHeight)
+
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def __style__(self):
         self.update_styles()
@@ -137,6 +154,7 @@ class CButton(QPushButton, Instances):
             {border_radius}
             {padding}
             {hover_border}
+            {self._toolTip.styleSheet()}
         """
         self.setStyleSheet(style_sheet)
         self.update()

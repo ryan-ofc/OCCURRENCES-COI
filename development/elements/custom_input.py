@@ -1,5 +1,8 @@
-from PySide6.QtWidgets import QLineEdit, QLabel, QVBoxLayout, QWidget
-from development.styles import Colors, Border, type_border, Border, Padding, BorderRadius
+from PySide6.QtWidgets import QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QWidget
+from PySide6.QtGui import QPixmap, QPainter
+from PySide6.QtCore import Qt
+from PySide6.QtSvg import QSvgRenderer
+from development.styles import Colors, Border, type_border, Padding, BorderRadius
 from development.elements import CTooltip
 from development.model import Instances
 
@@ -7,6 +10,7 @@ class CInput(QWidget, Instances):
     def __init__(
         self,
         label: str = "",
+        icon_path: str = None,  # Ícone
         objectName: str = "CInput",
         placeholder: str = None,
         width: int = None,
@@ -22,7 +26,6 @@ class CInput(QWidget, Instances):
         hover_bg_color: Colors = None,
         hover_border: Border = None,
         padding: Padding = Padding(all=8),
-
     ):
         super().__init__()
         Instances.__init__(
@@ -42,11 +45,14 @@ class CInput(QWidget, Instances):
             padding=padding,
             border_radius=border_radius,
         )
+
         self._placeholder = placeholder
         self.label = QLabel(label)
+        self.icon_label = QLabel()
         self.input_field = QLineEdit()
         self.input_field.setObjectName(objectName)
-        
+        self.icon_path = icon_path  
+
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
             color=self._text_color,
@@ -59,43 +65,75 @@ class CInput(QWidget, Instances):
             padding=5,
             font_size=12,
         )
-        
+
         self.__setup__()
 
     def __setup__(self):
         self.__config__()
         self.__style__()
         self.__layout__()
-    
+
     def __config__(self):
         if self._width is not None and self._height is not None:
             self.resize(self._width, self._height)
-        
+
         if self._minimumWidth is not None and self._minimumHeight is not None:
             self.setMinimumSize(self._minimumWidth, self._minimumHeight)
-        
+
         if self._maximumWidth is not None and self._maximumHeight is not None:
             self.setMaximumSize(self._maximumWidth, self._maximumHeight)
 
         if self._placeholder is not None:
             self.input_field.setPlaceholderText(self._placeholder)
 
-    def __style__(self):    
+        if self.icon_path:
+            self.setIcon(self.icon_path)
+
+    def setIcon(self, icon_path):
+        if icon_path.lower().endswith(".svg"):
+            # Renderiza SVG com alta qualidade
+            svg_renderer = QSvgRenderer(icon_path)
+            pixmap = QPixmap(20, 20)  # Aumenta o tamanho para melhor resolução
+            pixmap.fill(Qt.transparent)  # Fundo transparente
+            
+            painter = QPainter(pixmap)
+            svg_renderer.render(painter)
+            painter.end()
+        else:
+            # Renderiza imagens comuns com suavização
+            pixmap = QPixmap(icon_path).scaled(
+                20, 20, mode=Qt.SmoothTransformation
+            )
+        
+        pixmap.setDevicePixelRatio(self.devicePixelRatioF())  # Ajusta para telas de alta DPI
+        self.icon_label.setPixmap(pixmap)
+
+    def __style__(self):
         self.update_styles()
-    
+
     def __layout__(self):
-        layout = QVBoxLayout()
-        layout.setSpacing(4)
-        layout.addWidget(self.label)
-        layout.addWidget(self.input_field)
-        self.setLayout(layout)
+        main_layout = QVBoxLayout()
+        label_layout = QHBoxLayout()
+
+        if self.icon_path:
+            label_layout.addWidget(self.icon_label)
+
+        label_layout.addWidget(self.label)
+        label_layout.addStretch()
+
+        main_layout.setSpacing(4)
+        main_layout.addLayout(label_layout)
+        main_layout.addWidget(self.input_field)
+
+        self.setLayout(main_layout)
 
     def clear(self):
         self.input_field.clear()
-    
+
     def text(self):
         return self.input_field.text()
-     
+
+
     def update_styles(self):
         hover_style = (
             f"""
@@ -160,7 +198,7 @@ class CInput(QWidget, Instances):
             }}
             QLabel {{
                 font-size: 11px;
-                padding-left: 5px;
+                padding-left: 0px;
                 color: {self._text_color};
             }}
             #{self._objectName}:focus {{

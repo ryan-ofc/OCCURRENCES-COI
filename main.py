@@ -12,6 +12,9 @@ from development import (
     BorderRadius,
     Border,
     type_border,
+    Qt,
+    SQLiteManager,
+    os,
     time,
     sys,
 )
@@ -55,6 +58,7 @@ class App(CMainWindow):
         self.setCentralWidget(self.central_widget)
         self.__ui__()
         self.__layout__()
+        self.create_db()
 
     def __ui__(self):
         self.ui_navbar()
@@ -96,7 +100,8 @@ class App(CMainWindow):
             bg_color=self.theme_light.occurrenceForm.bg_color,
             text_color=self.theme_light.occurrenceForm.text_color,
             maximumWidth=500,
-            border_radius=BorderRadius(all=10),
+            maximumHeight=600,
+            border_radius=BorderRadius(all=8),
             border=Border(
                 pixel=1,
                 type_border=type_border.solid,
@@ -156,6 +161,46 @@ class App(CMainWindow):
             self.btn_toggle_theme.show()
 
         # print(self.width(), self.height())
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Return and event.modifiers() & Qt.ControlModifier:
+            # Ação para Ctrl + Enter
+            self.occurrence_form.save_form()
+
+        elif event.key() == Qt.Key_Backspace and event.modifiers() & Qt.ControlModifier:
+            # Ação para Ctrl + Backspace
+            self.occurrence_form.clear_form()       
+            
+        else:
+            pass
+
+    def create_db(self):
+        db_path = "app/database/database.db"
+        db_dir = os.path.dirname(db_path)
+
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir)
+
+        with SQLiteManager(db_name=db_path) as db:
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS occurrences (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT,
+                    phone TEXT,
+                    highway TEXT,
+                    km INTEGER,
+                    direction TEXT,
+                    vehicle TEXT,
+                    color TEXT,
+                    license_plate TEXT,
+                    problem TEXT,
+                    occupantes TEXT,
+                    local TEXT,
+                    reference_point TEXT,
+                    observations TEXT,
+                    is_vehicle BOOLEAN
+                );
+            """)
 
 
 if __name__ == "__main__":

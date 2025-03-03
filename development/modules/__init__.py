@@ -7,4 +7,7 @@ from ..styles import *
 from ..model import *
 from typing import Literal
 import time
+import os
 import sys
+import sqlite3
+from ..database import SQLiteManager
