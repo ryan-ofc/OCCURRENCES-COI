@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QFrame, QSpacerItem, QSizePolicy
 from development.styles import Colors, Border, type_border, Border, BorderRadius, Padding
-from development.elements import CTooltip, CLayout, CFrame, CInput
+from development.elements import CTooltip, CLayout, CFrame, CInput, CButton, CTextArea, CSwitch
 from development.model import Instances
 
 
@@ -41,6 +41,7 @@ class OccurrenceForm(QFrame, Instances):
             text_color=text_color,
             padding=padding,
         )
+        self.is_vehicle = True
         self._input_bg_color = input_bg_color
 
         self._toolTip = CTooltip(
@@ -84,15 +85,17 @@ class OccurrenceForm(QFrame, Instances):
 
         self.main_layout = layout.vertical()
 
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
         self.main_layout.addWidget(self.form_box_1)
         self.main_layout.addWidget(self.form_box_2)
         self.main_layout.addWidget(self.form_box_3)
         self.main_layout.addWidget(self.form_box_4)
         self.main_layout.addWidget(self.form_box_5)
-        self.main_layout.addWidget(self.form_box_6)
-
-        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.main_layout.addItem(spacer)
+        self.main_layout.addWidget(self.form_box_6)
+        self.main_layout.addWidget(self.form_box_7)
+
 
     def __ui__(self):
         self.ui_inputs()
@@ -111,6 +114,21 @@ class OccurrenceForm(QFrame, Instances):
         self.input_vehicle_occupants = CInput(label="Ocupantes", bg_color=self._input_bg_color)
         self.input_local = CInput(label="Encontra-se", bg_color=self._input_bg_color)
         self.input_reference_point = CInput(label="Ponto de referência", bg_color=self._input_bg_color)
+        self.input_description = CTextArea(label="Observações", bg_color=self._input_bg_color)
+
+        self.btn_save = CButton(text="Salvar", bg_color=Colors.blue, text_color=Colors.white)
+        self.btn_clear = CButton(text="Limpar", bg_color=Colors.gray.adjust_tonality(60), text_color=Colors.white)
+        self.btn_alter = CSwitch(on_switch=self.alter_form)
+    
+    def alter_form(self, event):
+        self.is_vehicle = not self.is_vehicle
+
+        if event == 2:
+            self.form_box_3.hide()
+            self.input_vehicle_occupants.hide()
+        else:
+            self.form_box_3.show()
+            self.input_vehicle_occupants.show()
 
     def ui_boxes(self):
         self.form_box_1 = CFrame(bg_color=Colors.transparent,border_radius=BorderRadius(top_left=20,top_right=20))
@@ -118,7 +136,8 @@ class OccurrenceForm(QFrame, Instances):
         self.form_box_3 = CFrame(bg_color=Colors.transparent)
         self.form_box_4 = CFrame(bg_color=Colors.transparent)
         self.form_box_5 = CFrame(bg_color=Colors.transparent)
-        self.form_box_6 = CFrame(bg_color=Colors.transparent,border_radius=BorderRadius(bottom_left=20,bottom_right=20))
+        self.form_box_6 = CFrame(bg_color=Colors.transparent)
+        self.form_box_7 = CFrame(bg_color=Colors.transparent,border_radius=BorderRadius(bottom_left=20,bottom_right=20))
 
         # Criando layouts separados para cada box
         self.form_layout_1 = CLayout(self.form_box_1).horizontal()
@@ -127,6 +146,7 @@ class OccurrenceForm(QFrame, Instances):
         self.form_layout_4 = CLayout(self.form_box_4).horizontal()
         self.form_layout_5 = CLayout(self.form_box_5).horizontal()
         self.form_layout_6 = CLayout(self.form_box_6).horizontal()
+        self.form_layout_7 = CLayout(self.form_box_7).horizontal(spacing=10, margins=(10,10,10,10))
 
         self.form_layout_1.addWidget(self.input_name)
         self.form_layout_1.addWidget(self.input_phone)
@@ -144,6 +164,12 @@ class OccurrenceForm(QFrame, Instances):
 
         self.form_layout_5.addWidget(self.input_local)
         self.form_layout_5.addWidget(self.input_reference_point)
+
+        self.form_layout_6.addWidget(self.input_description)
+
+        self.form_layout_7.addWidget(self.btn_save)
+        self.form_layout_7.addWidget(self.btn_clear)
+        self.form_layout_7.addWidget(self.btn_alter)
 
     def update_styles(self):
         hover_style = (
@@ -229,6 +255,7 @@ class OccurrenceForm(QFrame, Instances):
             self.input_vehicle_occupants,
             self.input_local,
             self.input_reference_point,
+            self.input_description,
         ]
 
         for input_field in inputs:

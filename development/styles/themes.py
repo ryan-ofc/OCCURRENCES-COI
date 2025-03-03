@@ -12,7 +12,7 @@ class Themes:
     class light:
         window = WindowStyle(bg_color=Colors.gray.adjust_tonality(100))
         toggle_theme = WindowStyle(bg_color=Colors.blue)
-        occurrenceForm = WindowStyle(bg_color=Colors.white, fg_color=Colors.white.adjust_tonality(40), text_color=Colors.black.adjust_tonality(70))
+        occurrenceForm = WindowStyle(bg_color=Colors.white, fg_color=Colors.white.adjust_tonality(40), text_color=Colors.black.adjust_tonality(80))
 
     class dark:
         window = WindowStyle(bg_color=Colors.black.adjust_tonality(65))

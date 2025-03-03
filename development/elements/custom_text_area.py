@@ -1,14 +1,14 @@
-from PySide6.QtWidgets import QLineEdit, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QTextEdit, QLabel, QVBoxLayout, QWidget
 from development.styles import Colors, Border, type_border, Border, Padding, BorderRadius
 from development.elements import CTooltip
 from development.model import Instances
 
-class CInput(QWidget, Instances):
+class CTextArea(QWidget, Instances):
     def __init__(
         self,
         label: str = "",
-        objectName: str = "CInput",
-        placeholder: str = None,
+        placeholder: str = "",
+        objectName: str = "CTextArea",
         width: int = None,
         height: int = None,
         minimumWidth: int = None,
@@ -22,7 +22,6 @@ class CInput(QWidget, Instances):
         hover_bg_color: Colors = None,
         hover_border: Border = None,
         padding: Padding = Padding(all=8),
-
     ):
         super().__init__()
         Instances.__init__(
@@ -42,10 +41,11 @@ class CInput(QWidget, Instances):
             padding=padding,
             border_radius=border_radius,
         )
-        self._placeholder = placeholder
+
         self.label = QLabel(label)
-        self.input_field = QLineEdit()
-        self.input_field.setObjectName(objectName)
+        self.text_area = QTextEdit()
+        self.text_area.setObjectName(objectName)
+        self.text_area.setPlaceholderText(placeholder)
         
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
@@ -76,18 +76,15 @@ class CInput(QWidget, Instances):
         
         if self._maximumWidth is not None and self._maximumHeight is not None:
             self.setMaximumSize(self._maximumWidth, self._maximumHeight)
-
-        if self._placeholder is not None:
-            self.input_field.setPlaceholderText(self._placeholder)
-
-    def __style__(self):    
+    
+    def __style__(self):
         self.update_styles()
     
     def __layout__(self):
         layout = QVBoxLayout()
         layout.setSpacing(4)
         layout.addWidget(self.label)
-        layout.addWidget(self.input_field)
+        layout.addWidget(self.text_area)
         self.setLayout(layout)
     
     def update_styles(self):
@@ -168,6 +165,6 @@ class CInput(QWidget, Instances):
             {self._toolTip.styleSheet()}
         """
         self.setStyleSheet(style_sheet)
-        self.input_field.setStyleSheet(style_sheet)
+        self.text_area.setStyleSheet(style_sheet)
         self.label.setStyleSheet(style_sheet)
         self.update()

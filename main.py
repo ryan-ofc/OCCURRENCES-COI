@@ -21,10 +21,10 @@ class App(CMainWindow):
     def __init__(
         self,
         title="Cadastro de ocorrências",
-        width=720,
-        height=500,
-        minimumWidth=350,
-        minimumHeight=450,
+        width=500,
+        height=600,
+        minimumWidth=500,
+        minimumHeight=600,
         maximumWidth=None,
         maximumHeight=None,
         bg_color: rgba = Colors.gray.adjust_tonality(100),
@@ -94,8 +94,8 @@ class App(CMainWindow):
     def ui_occurrence_form(self):
         self.occurrence_form = OccurrenceForm(
             bg_color=self.theme_light.occurrenceForm.bg_color,
+            text_color=self.theme_light.occurrenceForm.text_color,
             maximumWidth=500,
-            maximumHeight=600,
             border_radius=BorderRadius(all=10),
             border=Border(
                 pixel=1,
@@ -107,7 +107,6 @@ class App(CMainWindow):
     def setThemeLight(self):
         light = self.theme_light
 
-        # window
         self.content._bg_color = light.window.bg_color
         self.btn_toggle_theme.bg_light = light.toggle_theme.bg_color
         self.occurrence_form._bg_color = light.occurrenceForm.bg_color
@@ -117,7 +116,6 @@ class App(CMainWindow):
     def setThemeDark(self):
         dark = self.theme_dark
 
-        # window
         self.content._bg_color = dark.window.bg_color
         self.btn_toggle_theme.bg_dark = dark.toggle_theme.bg_color
         self.occurrence_form._bg_color = dark.occurrenceForm.bg_color
@@ -152,6 +150,10 @@ class App(CMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.btn_toggle_theme.move(self.width() - 80, self.height() - 58)
+        if self.width() < 700 and self.height() < 700:
+            self.btn_toggle_theme.hide()
+        else:
+            self.btn_toggle_theme.show()
 
         # print(self.width(), self.height())
 
