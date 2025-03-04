@@ -5,12 +5,14 @@ from PySide6.QtSvg import QSvgRenderer
 from development.styles import Colors, Border, type_border, Padding, BorderRadius
 from development.elements import CTooltip
 from development.model import Instances
+import re
+
 
 class CInput(QWidget, Instances):
     def __init__(
         self,
         label: str = "",
-        icon_path: str = None,  # Ícone
+        icon_path: str = None,
         objectName: str = "CInput",
         placeholder: str = None,
         width: int = None,
@@ -27,6 +29,9 @@ class CInput(QWidget, Instances):
         hover_border: Border = None,
         padding: Padding = Padding(all=8),
         suggestions: list = None,
+        only_numbers: bool = False,
+        no_special_chars: bool = False,
+        only_uppercase: bool = False,
     ):
         super().__init__()
         Instances.__init__(
@@ -54,6 +59,9 @@ class CInput(QWidget, Instances):
         self.input_field.setObjectName(objectName)
         self.icon_path = icon_path
         self.suggestions = suggestions if suggestions else []
+        self.only_numbers = only_numbers
+        self.no_special_chars = no_special_chars
+        self.only_uppercase = only_uppercase
 
         self.completer = QCompleter(self.suggestions, self)
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
@@ -74,6 +82,8 @@ class CInput(QWidget, Instances):
         )
 
         self.__setup__()
+    
+        self.input_field.textChanged.connect(self.__on_text_changed)
 
     def __setup__(self):
         self.__config__()
@@ -95,26 +105,7 @@ class CInput(QWidget, Instances):
 
         if self.icon_path:
             self.setIcon(self.icon_path)
-
-    def setIcon(self, icon_path):
-        if icon_path.lower().endswith(".svg"):
-            # Renderiza SVG com alta qualidade
-            svg_renderer = QSvgRenderer(icon_path)
-            pixmap = QPixmap(20, 20)  # Aumenta o tamanho para melhor resolução
-            pixmap.fill(Qt.transparent)  # Fundo transparente
-            
-            painter = QPainter(pixmap)
-            svg_renderer.render(painter)
-            painter.end()
-        else:
-            # Renderiza imagens comuns com suavização
-            pixmap = QPixmap(icon_path).scaled(
-                20, 20, mode=Qt.SmoothTransformation
-            )
-        
-        pixmap.setDevicePixelRatio(self.devicePixelRatioF())  # Ajusta para telas de alta DPI
-        self.icon_label.setPixmap(pixmap)
-
+  
     def __style__(self):
         self.update_styles()
 
@@ -134,12 +125,24 @@ class CInput(QWidget, Instances):
 
         self.setLayout(main_layout)
 
+    def __on_text_changed(self, text: str):
+        filtered_text = self.apply_filters(text)
+        self.input_field.setText(filtered_text)
+
+    def apply_filters(self, text: str) -> str:
+        if self.only_numbers:
+            text = re.sub(r'\D', '', text)
+        if self.no_special_chars:
+            text = re.sub(r'[^a-zA-Z0-9 ]', '', text)
+        if self.only_uppercase:
+            text = text.upper()
+        return text
+    
     def clear(self):
         self.input_field.clear()
 
     def text(self):
         return self.input_field.text()
-
 
     def update_styles(self):
         hover_style = (
@@ -222,3 +225,32 @@ class CInput(QWidget, Instances):
         self.input_field.setStyleSheet(style_sheet)
         self.label.setStyleSheet(style_sheet)
         self.update()
+
+    def setIcon(self, icon_path):
+            if icon_path.lower().endswith(".svg"):
+                # Renderiza SVG com alta qualidade
+                svg_renderer = QSvgRenderer(icon_path)
+                pixmap = QPixmap(20, 20)  # Aumenta o tamanho para melhor resolução
+                pixmap.fill(Qt.transparent)  # Fundo transparente
+                
+                painter = QPainter(pixmap)
+                svg_renderer.render(painter)
+                painter.end()
+            else:
+                # Renderiza imagens comuns com suavização
+                pixmap = QPixmap(icon_path).scaled(
+                    20, 20, mode=Qt.SmoothTransformation
+                )
+            
+            pixmap.setDevicePixelRatio(self.devicePixelRatioF())  # Ajusta para telas de alta DPI
+            self.icon_label.setPixmap(pixmap)
+
+    def setOnlyNumbers(self, role: bool):
+        self.only_numbers = role
+
+    def setNoSpecialChars(self, role: bool):
+        self.no_special_chars = role
+
+    def setOnlyUppercase(self, role: bool):
+        self.only_uppercase = role
+        

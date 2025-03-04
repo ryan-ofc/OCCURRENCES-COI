@@ -40,10 +40,10 @@ class OccurrenceForm(QFrame, Instances):
         border_radius: BorderRadius = None,
         hover_bg_color: Colors = None,
         hover_border: Border = None,
-        input_bg_color: Colors=Colors.white.adjust_tonality(40),
-        input_border: Border=Border(color=Colors.gray.adjust_tonality(85)),
+        input_bg_color: Colors = Colors.white.adjust_tonality(40),
+        input_border: Border = Border(color=Colors.gray.adjust_tonality(85)),
         padding: Padding = None,
-        update_table: callable = None
+        update_table: callable = None,
     ):
         QFrame.__init__(self)
         Instances.__init__(
@@ -134,27 +134,44 @@ class OccurrenceForm(QFrame, Instances):
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/user.svg",
             is_editable=True,
-            items=["Usuário"]
+            items=["Usuário"],
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_phone = CInput(
             label="Telefone",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/phone.svg",
+            only_numbers=True,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_highway = CInput(
             label="Rodovia",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/highway.svg",
             suggestions=HIGHWAYS,
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_km = CInput(
-            label="Km", bg_color=self._input_bg_color, icon_path="app/icons/svg/km.svg"
+            label="Km",
+            bg_color=self._input_bg_color,
+            icon_path="app/icons/svg/km.svg",
+            only_numbers=True,
+            only_uppercase=False,
+            no_special_chars=False,
         )
         self.input_direction = CSelect(
             label="Sentido",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/sentido.svg",
             items=DIRECTIONS,
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_vehicle_model = CSelect(
             label="Veículo",
@@ -162,27 +179,42 @@ class OccurrenceForm(QFrame, Instances):
             icon_path="app/icons/svg/carro.svg",
             items=VEHICLES_MODELS,
             is_editable=True,
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_vehicle_color = CInput(
             label="Cor",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/cor.svg",
             suggestions=COLORS,
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_vehicle_license_plate = CInput(
             label="Placa",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/placa.svg",
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_problem = CInput(
             label="Problema",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/sirene.svg",
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_vehicle_occupants = CInput(
             label="Ocupantes",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/ocupantes.svg",
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_local = CSelect(
             label="Encontra-se",
@@ -190,14 +222,24 @@ class OccurrenceForm(QFrame, Instances):
             icon_path="app/icons/svg/local.svg",
             items=LOCALS,
             is_editable=True,
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_reference_point = CInput(
             label="Ponto de referência",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/mapa.svg",
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
         self.input_description = CTextArea(
-            label="Observações", bg_color=self._input_bg_color
+            label="Observações",
+            bg_color=self._input_bg_color,
+            only_numbers=False,
+            only_uppercase=True,
+            no_special_chars=False,
         )
 
         self.btn_save = CButton(
@@ -272,8 +314,8 @@ class OccurrenceForm(QFrame, Instances):
         }
         if self.is_vehicle:
             self.form_occurrence["vehicle_model"] = (
-                self.input_vehicle_model.text()
-                if self.input_vehicle_model.text()
+                self.input_vehicle_model.currentText()
+                if self.input_vehicle_model.currentText()
                 else "N/A"
             )
             self.form_occurrence["vehicle_color"] = (

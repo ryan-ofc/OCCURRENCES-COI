@@ -2,6 +2,8 @@ from PySide6.QtWidgets import QTextEdit, QLabel, QVBoxLayout, QWidget
 from development.styles import Colors, Border, type_border, Border, Padding, BorderRadius
 from development.elements import CTooltip
 from development.model import Instances
+import re
+
 
 class CTextArea(QWidget, Instances):
     def __init__(
@@ -22,6 +24,9 @@ class CTextArea(QWidget, Instances):
         hover_bg_color: Colors = None,
         hover_border: Border = None,
         padding: Padding = Padding(all=8),
+        only_numbers: bool = False,
+        no_special_chars: bool = False,
+        only_uppercase: bool = False,
     ):
         super().__init__()
         Instances.__init__(
@@ -42,10 +47,16 @@ class CTextArea(QWidget, Instances):
             border_radius=border_radius,
         )
 
+        self.only_numbers = only_numbers
+        self.no_special_chars = no_special_chars
+        self.only_uppercase = only_uppercase
+
         self.label = QLabel(label)
         self.text_area = QTextEdit()
         self.text_area.setObjectName(objectName)
         self.text_area.setPlaceholderText(placeholder)
+
+        self.text_area.textChanged.connect(self.__on_text_changed)
         
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
@@ -174,3 +185,40 @@ class CTextArea(QWidget, Instances):
         self.text_area.setStyleSheet(style_sheet)
         self.label.setStyleSheet(style_sheet)
         self.update()
+
+    def apply_filters(self, text: str) -> str:
+        if self.only_numbers:
+            text = re.sub(r'\D', '', text)
+        if self.no_special_chars:
+            text = re.sub(r'[^a-zA-Z0-9 ]', '', text)
+        if self.only_uppercase:
+            text = text.upper()
+        return text
+    
+    def __on_text_changed(self):
+        text = self.text_area.toPlainText()
+        filtered_text = self.apply_filters(text)
+
+        # Armazena a posição do cursor antes da alteração
+        cursor_position = self.text_area.textCursor().position()
+
+        self.text_area.blockSignals(True)
+
+        # Só altera o texto após salvar a posição do cursor
+        self.text_area.setPlainText(filtered_text)
+
+        # Restaura a posição do cursor para onde estava antes da alteração
+        cursor = self.text_area.textCursor()
+        cursor.setPosition(cursor_position if cursor_position <= len(filtered_text) else len(filtered_text))
+        self.text_area.setTextCursor(cursor)
+
+        self.text_area.blockSignals(False)
+
+    def setOnlyNumbers(self, role: bool):
+        self.only_numbers = role
+
+    def setNoSpecialChars(self, role: bool):
+        self.no_special_chars = role
+
+    def setOnlyUppercase(self, role: bool):
+        self.only_uppercase = role

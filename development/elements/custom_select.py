@@ -5,6 +5,7 @@ from PySide6.QtSvg import QSvgRenderer
 from development.styles import Colors, Border, type_border, Padding, BorderRadius
 from development.elements import CTooltip
 from development.model import Instances
+import re
 
 
 class CSelect(QWidget, Instances):
@@ -30,6 +31,9 @@ class CSelect(QWidget, Instances):
         is_editable: bool = False,
         icon_down_arrow: str = "app/icons/svg/seta.svg",
         icon_down_arrow_size: list = [14,32],
+        only_numbers: bool = False,
+        no_special_chars: bool = False,
+        only_uppercase: bool = False,
     ):
         super().__init__()
         Instances.__init__(
@@ -59,11 +63,15 @@ class CSelect(QWidget, Instances):
         self.combo_box.setEditable(is_editable)
         self.icon_path = icon_path
 
+        self.only_numbers = only_numbers
+        self.no_special_chars = no_special_chars
+        self.only_uppercase = only_uppercase
+
         if items:
-            self.combo_box.addItems(items)
+            self.combo_box.addItems([self.apply_filters(item) for item in items])
 
         self.combo_box.setCurrentIndex(-1)
-        # self.combo_box.setCursor(Qt.PointingHandCursor)
+        self.combo_box.editTextChanged.connect(self.on_text_changed)
 
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
@@ -98,7 +106,6 @@ class CSelect(QWidget, Instances):
         if self.icon_path:
             self.setIcon(self.icon_path)
 
-    
     def __style__(self):
         self.update_styles()
 
@@ -250,3 +257,26 @@ class CSelect(QWidget, Instances):
 
     def clearText(self):
         self.combo_box.setCurrentIndex(-1)
+
+    def apply_filters(self, text: str) -> str:
+        if self.only_numbers:
+            text = re.sub(r'\D', '', text)
+        if self.no_special_chars:
+            text = re.sub(r'[^a-zA-Z0-9 ]', '', text)
+        if self.only_uppercase:
+            text = text.upper()
+        return text
+
+    def setOnlyNumbers(self, role: bool):
+        self.only_numbers = role
+
+    def setNoSpecialChars(self, role: bool):
+        self.no_special_chars = role
+
+    def setOnlyUppercase(self, role: bool):
+        self.only_uppercase = role
+
+    def on_text_changed(self, text: str):
+        self.combo_box.blockSignals(True)
+        self.combo_box.setEditText(self.apply_filters(text))
+        self.combo_box.blockSignals(False)      
