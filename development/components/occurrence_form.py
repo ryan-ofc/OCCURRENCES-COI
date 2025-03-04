@@ -40,6 +40,7 @@ class OccurrenceForm(QFrame, Instances):
         hover_border: Border = None,
         input_bg_color=Colors.white.adjust_tonality(40),
         padding: Padding = None,
+        update_table: callable = None
     ):
         QFrame.__init__(self)
         Instances.__init__(
@@ -60,6 +61,7 @@ class OccurrenceForm(QFrame, Instances):
             padding=padding,
         )
         self.is_vehicle = True
+        self.update_table = update_table
         self._input_bg_color = input_bg_color
 
         self._toolTip = CTooltip(
@@ -303,6 +305,7 @@ class OccurrenceForm(QFrame, Instances):
             message = CMessageBox(
                 self, title="Notificação", text="Formulário salvo com sucesso!"
             )
+            self.update_table()
             message.show()
 
         except Exception as e:

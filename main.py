@@ -141,6 +141,8 @@ class App(CMainWindow):
         for oc in self.responseSearch.data:
             self.table_occurrences.add_row([str(oc.id), oc.name, oc.phone, oc.highway, oc.km or "", oc.direction, oc.problem, oc.local, oc.reference_point])
 
+        self.occurrence_form.update_table = self.load_page
+
     def setThemeLight(self):
         light = self.theme_light
 

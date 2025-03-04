@@ -215,11 +215,14 @@ class CTable(QTableWidget, Instances):
         self.insertRow(row_position)
 
         for col, data in enumerate(row_data):
-            self.setItem(row_position, col, QTableWidgetItem(data))
+            item = QTableWidgetItem(data)
+            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.setItem(row_position, col, item)
 
         edit_button = CButton(
             text="", bg_color=self._bg_color, border_radius=BorderRadius(all=0)
         )
+        edit_button.setToolTip(f"ID: {row_data[0]}")
         icon_path = "app/icons/svg/lapis.svg"
         edit_button.setIcon(QIcon(QPixmap(icon_path)))
         edit_button.setIconSize(QSize(20, 20))

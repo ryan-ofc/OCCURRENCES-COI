@@ -84,7 +84,7 @@ class SQLiteManager:
             count_query += filter_clause
             params = ("%" + search + "%",) * 6
 
-        base_query += " LIMIT ? OFFSET ?"
+        base_query += " ORDER BY id DESC LIMIT ? OFFSET ?"
         params += (rows, offset)
 
         with SQLiteManager(db_name=self.db_path) as db:
