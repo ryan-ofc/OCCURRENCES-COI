@@ -1,4 +1,13 @@
-from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView, QApplication
+from PySide6.QtWidgets import (
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QApplication,
+    QHBoxLayout,
+    QVBoxLayout,
+)
+from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtCore import QSize, Qt
 from development.styles import Colors, Border, BorderRadius, type_border
 from development.elements import CTooltip
 from development.model import Instances
@@ -26,7 +35,9 @@ class CTable(QTableWidget, Instances):
         text_color: Colors = Colors.black.adjust_tonality(75),
         vertical: bool = True,
         horizontal: bool = True,
-        fg_color: Colors = Colors.gray.adjust_tonality(70)
+        fg_color: Colors = Colors.gray.adjust_tonality(70),
+        next_action: callable = None,
+        previous_action: callable = None,
     ):
         QTableWidget.__init__(self, rows, columns)
         Instances.__init__(
@@ -45,6 +56,8 @@ class CTable(QTableWidget, Instances):
             border_radius=border_radius,
             text_color=text_color,
         )
+        self.next_action = next_action
+        self.previous_action = previous_action
         self._fg_color = fg_color
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
@@ -82,6 +95,7 @@ class CTable(QTableWidget, Instances):
     def __setup__(self):
         self.__config__()
         self.__style__()
+        self.__ui__()
 
     def __config__(self):
         self.setObjectName(self._objectName)
@@ -98,6 +112,39 @@ class CTable(QTableWidget, Instances):
     def __style__(self):
         self.update_styles()
 
+    def __ui__(self):
+        # Criar os botões
+        self.btn_next = CButton(
+            text="Avançar",
+            onClick=self.next_action,
+            bg_color=Colors.blue,
+            text_color=Colors.white,
+            hover_bg_color=Colors.blue.adjust_tonality(60),
+            minimumWidth=70,
+            minimumHeight=30,
+        )
+        self.btn_previous = CButton(
+            text="Voltar",
+            onClick=self.previous_action,
+            bg_color=Colors.gray,
+            text_color=Colors.white,
+            hover_bg_color=Colors.gray.adjust_tonality(60),
+            minimumWidth=70,
+            minimumHeight=30,
+        )
+
+        # Criar um layout horizontal para os botões
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(self.btn_previous)
+        btn_layout.addWidget(self.btn_next)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addStretch()
+        main_layout.addLayout(btn_layout)
+
+        self.setLayout(main_layout)
+
     def clipboard_row(self, item):
         row_index = item.row()
         column_index = item.column()
@@ -107,7 +154,11 @@ class CTable(QTableWidget, Instances):
             clipboard = QApplication.clipboard()
             clipboard.setText(cell_value)
 
-            message = CMessageBox(self,title="Notificação",text=f"Valor: [{cell_value}] copiado para área de transferência.")
+            message = CMessageBox(
+                self,
+                title="Notificação",
+                text=f"Valor: [{cell_value}] copiado para área de transferência.",
+            )
             message.show()
 
     def get_row_values(self, row_index: int):
@@ -162,14 +213,19 @@ class CTable(QTableWidget, Instances):
     def add_row(self, row_data: list[str]):
         row_position = self.rowCount()
         self.insertRow(row_position)
-        
-        # Adicionar os dados da linha
+
         for col, data in enumerate(row_data):
             self.setItem(row_position, col, QTableWidgetItem(data))
-        
-        # Adicionar o botão de lápis na última coluna
-        edit_button = CButton(text="✏️", bg_color=self._bg_color, border_radius=BorderRadius(all=0))
+
+        edit_button = CButton(
+            text="", bg_color=self._bg_color, border_radius=BorderRadius(all=0)
+        )
+        icon_path = "app/icons/svg/lapis.svg"
+        edit_button.setIcon(QIcon(QPixmap(icon_path)))
+        edit_button.setIconSize(QSize(20, 20))
+
         edit_button.clicked.connect(lambda: self.edit_row(row_position))
+
         self.setCellWidget(row_position, len(row_data), edit_button)
 
     def edit_row(self, row_index: int):

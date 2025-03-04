@@ -53,7 +53,9 @@ class App(CMainWindow):
         self.theme_dark = Themes.dark
         self.search = None
         self.page = 1
-        self.rows = 15
+        self.rows = 17
+        self.total_pages = None
+        self.total_rows = None
         self.central_widget = CFrame(
             maximumWidth=4096,
             maximumHeight=2160,
@@ -126,6 +128,8 @@ class App(CMainWindow):
             text_color=self.theme_light.occurrenceForm.text_color,
             maximumHeight=585,
             maximumWidth=1200,
+            next_action=self.next_page,
+            previous_action=self.previous_page,
             border_radius=BorderRadius(bottom_left=8,bottom_right=8),
             border=Border(
                 pixel=1,
@@ -134,7 +138,7 @@ class App(CMainWindow):
             ),
         )
         self.table_occurrences.set_headers(["ID","Nome","Telefone","Rodovia","Km","Sentido","Problema","Encontra-se","Ponto de referência", "Ações"])
-        for oc in self.data_occurrences:
+        for oc in self.responseSearch.data:
             self.table_occurrences.add_row([str(oc.id), oc.name, oc.phone, oc.highway, oc.km or "", oc.direction, oc.problem, oc.local, oc.reference_point])
 
     def setThemeLight(self):
@@ -244,9 +248,31 @@ class App(CMainWindow):
             """
             )
 
-            responseSearch = db.searchPagination(search=self.search,page=self.page,rows=self.rows)
-            self.data_occurrences = responseSearch.data
+            self.responseSearch = db.searchPagination(search=self.search,page=self.page,rows=self.rows)
+            self.total_pages = self.responseSearch.total_pages
+            self.total_rows = self.responseSearch.total_rows
 
+    def next_page(self):
+        if self.page < self.total_pages:
+            self.page += 1
+            self.load_page()
+
+    def previous_page(self):
+        if self.page > 1:
+            self.page -= 1
+            self.load_page()
+
+    def load_page(self):
+        self.table_occurrences.setRowCount(0)
+
+        db_path = "app/database/database.db"
+
+        with SQLiteManager(db_name=db_path) as db:
+            response = db.searchPagination(search=self.search, page=self.page, rows=self.rows)
+            self.page, self.total_pages, self.total_rows, data = response.page, response.total_pages, response.total_rows, response.data
+
+            for oc in data:
+                self.table_occurrences.add_row([str(oc.id), oc.name, oc.phone, oc.highway, oc.km or "", oc.direction, oc.problem, oc.local, oc.reference_point])
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

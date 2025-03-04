@@ -24,6 +24,7 @@ class CLabel(QWidget, Instances):
         border: Border = None,
         border_radius: BorderRadius = BorderRadius(all=5),
         padding: Padding = Padding(all=8),
+        icon_size: list[int] = [20,20],
     ):
         super().__init__()
         Instances.__init__(
@@ -45,6 +46,7 @@ class CLabel(QWidget, Instances):
         self.label = QLabel(text)
         self.icon_label = QLabel()
         self.icon_path = icon_path
+        self._icon_size = icon_size
 
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
@@ -82,14 +84,14 @@ class CLabel(QWidget, Instances):
     def setIcon(self, icon_path):
         if icon_path.lower().endswith(".svg"):
             svg_renderer = QSvgRenderer(icon_path)
-            pixmap = QPixmap(20, 20)
+            pixmap = QPixmap(self._icon_size[0], self._icon_size[1])
             pixmap.fill(Qt.transparent)
 
             painter = QPainter(pixmap)
             svg_renderer.render(painter)
             painter.end()
         else:
-            pixmap = QPixmap(icon_path).scaled(20, 20, mode=Qt.SmoothTransformation)
+            pixmap = QPixmap(icon_path).scaled(self._icon_size[0], self._icon_size[1], mode=Qt.SmoothTransformation)
 
         pixmap.setDevicePixelRatio(self.devicePixelRatioF())
         self.icon_label.setPixmap(pixmap)

@@ -188,12 +188,14 @@ class OccurrenceForm(QFrame, Instances):
         self.btn_save = CButton(
             text="Salvar",
             bg_color=Colors.blue,
+            hover_bg_color=Colors.blue.adjust_tonality(60),
             text_color=Colors.white,
             onClick=self.confirm_save_form,
         )
         self.btn_clear = CButton(
             text="Limpar",
-            bg_color=Colors.gray.adjust_tonality(60),
+            bg_color=Colors.gray,
+            hover_bg_color=Colors.gray.adjust_tonality(60),
             text_color=Colors.white,
             onClick=self.confirm_clear_form,
         )
