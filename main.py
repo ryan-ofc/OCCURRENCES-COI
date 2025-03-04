@@ -119,21 +119,23 @@ class App(CMainWindow):
 
     def ui_table_occurrences(self):
         self.table_occurrences = CTable(
-            columns=8,
-            rows=len(self.data_occurrences),
+            columns=9,
+            rows=0,
+            vertical=False,
             bg_color=self.theme_light.occurrenceForm.bg_color,
             text_color=self.theme_light.occurrenceForm.text_color,
             maximumHeight=585,
-            border_radius=BorderRadius(all=8),
+            maximumWidth=1200,
+            border_radius=BorderRadius(bottom_left=8,bottom_right=8),
             border=Border(
                 pixel=1,
                 type_border=type_border.solid,
                 color=Colors.gray.adjust_tonality(80),
             ),
         )
-        self.table_occurrences.set_headers(["Nome","Telefone","Rodovia","Km","Sentido","Problema","Encontra-se","Ponto de referência"])
+        self.table_occurrences.set_headers(["ID","Nome","Telefone","Rodovia","Km","Sentido","Problema","Encontra-se","Ponto de referência", "Ações"])
         for oc in self.data_occurrences:
-            self.table_occurrences.add_row([oc.name, oc.phone, oc.highway, oc.km, oc.direction, oc.problem, oc.local, oc.reference_point])
+            self.table_occurrences.add_row([str(oc.id), oc.name, oc.phone, oc.highway, oc.km or "", oc.direction, oc.problem, oc.local, oc.reference_point])
 
     def setThemeLight(self):
         light = self.theme_light
@@ -143,6 +145,9 @@ class App(CMainWindow):
         self.occurrence_form._bg_color = light.occurrenceForm.bg_color
         self.occurrence_form._text_color = light.occurrenceForm.text_color
         self.occurrence_form._input_bg_color = light.occurrenceForm.fg_color
+        self.table_occurrences._bg_color = light.occurrenceTable.bg_color
+        self.table_occurrences._text_color = light.occurrenceTable.text_color
+        self.table_occurrences._fg_color = light.occurrenceTable.fg_color
 
     def setThemeDark(self):
         dark = self.theme_dark
@@ -152,6 +157,9 @@ class App(CMainWindow):
         self.occurrence_form._bg_color = dark.occurrenceForm.bg_color
         self.occurrence_form._text_color = dark.occurrenceForm.text_color
         self.occurrence_form._input_bg_color = dark.occurrenceForm.fg_color
+        self.table_occurrences._bg_color = dark.occurrenceTable.bg_color
+        self.table_occurrences._text_color = dark.occurrenceTable.text_color
+        self.table_occurrences._fg_color = dark.occurrenceTable.fg_color
 
     def setTheme(self, theme: Themes):
         if theme == Themes.light:
@@ -172,6 +180,7 @@ class App(CMainWindow):
         self.update_styles()
         self.content.update_styles()
         self.occurrence_form.update_styles()
+        self.table_occurrences.update_styles()
 
         self.btn_toggle_theme.switch_theme()
 
@@ -191,7 +200,7 @@ class App(CMainWindow):
         else:
             self.table_occurrences.show()
 
-        print(self.width(), self.height())
+        # print(self.width(), self.height())
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return and event.modifiers() & Qt.ControlModifier:

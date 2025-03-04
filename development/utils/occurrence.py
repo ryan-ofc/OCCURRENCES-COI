@@ -1,7 +1,7 @@
 import os
 from typing import Tuple, Optional, List
-from development.database import SQLiteManager
 import pyperclip
+import development.database
 
 class Occurrence:
     def __init__(
@@ -38,6 +38,7 @@ class Occurrence:
         self.observations = observations
         self.is_vehicle = is_vehicle
         self.db_path = "app/database/database.db"
+        self.db_manager = development.database.SQLiteManager(db_name=self.db_path)
 
         self.create_table()
 
@@ -46,7 +47,9 @@ class Occurrence:
         if not os.path.exists(db_dir):
             os.makedirs(db_dir)
 
-        with SQLiteManager(db_name=self.db_path) as db:
+        
+
+        with self.db_manager as db:
             db.execute("""
                 CREATE TABLE IF NOT EXISTS occurrences (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -126,7 +129,7 @@ class Occurrence:
         self.execute(query, (self.id,))
 
     def execute(self, query: str, params: Tuple = (), fetch_id: bool = False) -> Optional[int]:
-        with SQLiteManager(db_name=self.db_path) as db:
+        with self.db_manager as db:
             db.execute(query, params)
             if fetch_id:
                 return db.cursor.lastrowid
@@ -156,7 +159,7 @@ class Occurrence:
         query += " LIMIT ? OFFSET ?"
         params += (rows, offset)
 
-        with SQLiteManager(db_name=self.db_path) as db:
+        with self.db_manager as db:
             db.execute(query, params)
             results = db.cursor.fetchall()
 

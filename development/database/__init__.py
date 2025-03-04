@@ -23,6 +23,7 @@ class SQLiteManager:
         self.db_name = db_name
         self.conn = None
         self.cursor = None
+        self.db_path = "app/database/database.db"
 
     def __enter__(self):
         """Abre a conexão e retorna o próprio objeto para uso com 'with'."""
@@ -87,11 +88,13 @@ class SQLiteManager:
         params += (rows, offset)
 
         with SQLiteManager(db_name=self.db_path) as db:
-            # Obtendo total de registros
-            db.execute(count_query, params[:6])
+            if search:
+                db.execute(count_query, params[:6])
+            else:
+                db.execute(count_query)
+            
             total_rows = db.cursor.fetchone()[0]
 
-            # Executando a query principal
             db.execute(base_query, params)
             results = db.cursor.fetchall()
 

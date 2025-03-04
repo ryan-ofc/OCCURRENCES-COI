@@ -5,7 +5,7 @@ from development.elements import CTooltip
 
 
 class CSwitch(QCheckBox):
-    def __init__(self, on_switch=None, bg_color: Colors = Colors.gray, text_color: Colors = Colors.white, parent=None):
+    def __init__(self, on_switch=None, bg_color: Colors = Colors.gray, text_color: Colors = Colors.white, initial_state: bool = False, parent=None):
         super().__init__(parent)
         self.on_switch = on_switch
         self._bg_color = bg_color
@@ -13,7 +13,7 @@ class CSwitch(QCheckBox):
         self.stateChanged.connect(self.switch)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-        # Configurações iniciais
+        self.setChecked(initial_state)
         self.setFixedSize(70, 30)
 
         # Criando o QFrame para a bolinha
@@ -102,19 +102,3 @@ class CSwitch(QCheckBox):
             self.setChecked(not self.isChecked())  # Alterna o estado ao clicar
             super().mousePressEvent(event)  # Chama o evento original
 
-
-# Código para inicializar a aplicação
-if __name__ == "__main__":
-    app = QApplication([])
-
-    window = QWidget()
-    layout = QVBoxLayout()
-
-    switch = CSwitch()
-    layout.addWidget(switch)
-
-    window.setLayout(layout)
-    window.setWindowTitle("Custom Switch")
-    window.show()
-
-    app.exec()

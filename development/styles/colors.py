@@ -1,3 +1,5 @@
+from PySide6.QtGui import QColor
+
 class rgba:
     def __init__(self, r: int = 255, g: int = 255, b: int = 255, a: int | float = 1.0):
         self.r = r

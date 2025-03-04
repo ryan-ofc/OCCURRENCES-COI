@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QFormLayout, QGridLayout, QWidget
+from PySide6.QtCore import Qt
 from typing import Literal
 
 
@@ -7,32 +8,36 @@ class CLayout:
         self._parent = parent
         self._current_layout = None
 
-    def horizontal(self, margins: tuple = (0, 0, 0, 0), spacing: int = 0) -> QHBoxLayout:
+    def horizontal(self, margins: tuple = (0, 0, 0, 0), spacing: int = 0, alignment: Qt.AlignmentFlag = None) -> QHBoxLayout:
         """Retorna um layout horizontal (QHBoxLayout) com margens e espaçamento configuráveis."""
         layout = QHBoxLayout(self._parent)
         layout.setContentsMargins(*margins)
         layout.setSpacing(spacing)
+        if alignment: layout.setAlignment(alignment)
         return layout
 
-    def vertical(self, margins: tuple = (0, 0, 0, 0), spacing: int = 0) -> QVBoxLayout:
+    def vertical(self, margins: tuple = (0, 0, 0, 0), spacing: int = 0, alignment: Qt.AlignmentFlag = None) -> QVBoxLayout:
         """Retorna um layout vertical (QVBoxLayout) com margens e espaçamento configuráveis."""
         layout = QVBoxLayout(self._parent)
         layout.setContentsMargins(*margins)
         layout.setSpacing(spacing)
+        if alignment: layout.setAlignment(alignment)
         return layout
 
-    def form(self, margins: tuple = (0, 0, 0, 0), spacing: int = 0) -> QFormLayout:
+    def form(self, margins: tuple = (0, 0, 0, 0), spacing: int = 0, alignment: Qt.AlignmentFlag = None) -> QFormLayout:
         """Retorna um layout de formulário (QFormLayout) com margens e espaçamento configuráveis."""
         layout = QFormLayout(self._parent)
         layout.setContentsMargins(*margins)
         layout.setSpacing(spacing)
+        if alignment: layout.setAlignment(alignment)
         return layout
 
-    def grid(self, margins: tuple = (0, 0, 0, 0), spacing: int = 0) -> QGridLayout:
+    def grid(self, margins: tuple = (0, 0, 0, 0), spacing: int = 0, alignment: Qt.AlignmentFlag = None) -> QGridLayout:
         """Retorna um layout de grade (QGridLayout) com margens e espaçamento configuráveis."""
         layout = QGridLayout(self._parent)
         layout.setContentsMargins(*margins)
         layout.setSpacing(spacing)
+        if alignment: layout.setAlignment(alignment)
         return layout
 
     def setLayout(self, layout):
