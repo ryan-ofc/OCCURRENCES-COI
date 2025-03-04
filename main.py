@@ -151,6 +151,7 @@ class App(CMainWindow):
         self.occurrence_form._bg_color = light.occurrenceForm.bg_color
         self.occurrence_form._text_color = light.occurrenceForm.text_color
         self.occurrence_form._input_bg_color = light.occurrenceForm.fg_color
+        self.occurrence_form._input_border = light.occurrenceForm.border
         self.table_occurrences._bg_color = light.occurrenceTable.bg_color
         self.table_occurrences._text_color = light.occurrenceTable.text_color
         self.table_occurrences._fg_color = light.occurrenceTable.fg_color
@@ -163,6 +164,7 @@ class App(CMainWindow):
         self.occurrence_form._bg_color = dark.occurrenceForm.bg_color
         self.occurrence_form._text_color = dark.occurrenceForm.text_color
         self.occurrence_form._input_bg_color = dark.occurrenceForm.fg_color
+        self.occurrence_form._input_border = dark.occurrenceForm.border
         self.table_occurrences._bg_color = dark.occurrenceTable.bg_color
         self.table_occurrences._text_color = dark.occurrenceTable.text_color
         self.table_occurrences._fg_color = dark.occurrenceTable.fg_color

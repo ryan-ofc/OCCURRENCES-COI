@@ -9,3 +9,4 @@ from .custom_switch import CSwitch
 from .custom_messagebox import CMessageBox, ButtonRole
 from .custom_table import CTable
 from .custom_label import CLabel
+from .custom_select import CSelect

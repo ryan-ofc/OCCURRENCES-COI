@@ -18,8 +18,10 @@ from development.elements import (
     CSwitch,
     CMessageBox,
     CLabel,
+    CSelect,
 )
 from development.model import Instances
+from development.constants import *
 
 
 class OccurrenceForm(QFrame, Instances):
@@ -38,7 +40,8 @@ class OccurrenceForm(QFrame, Instances):
         border_radius: BorderRadius = None,
         hover_bg_color: Colors = None,
         hover_border: Border = None,
-        input_bg_color=Colors.white.adjust_tonality(40),
+        input_bg_color: Colors=Colors.white.adjust_tonality(40),
+        input_border: Border=Border(color=Colors.gray.adjust_tonality(85)),
         padding: Padding = None,
         update_table: callable = None
     ):
@@ -63,6 +66,7 @@ class OccurrenceForm(QFrame, Instances):
         self.is_vehicle = True
         self.update_table = update_table
         self._input_bg_color = input_bg_color
+        self._input_border = input_border
 
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
@@ -125,10 +129,12 @@ class OccurrenceForm(QFrame, Instances):
         self.ui_boxes()
 
     def ui_inputs(self):
-        self.input_name = CInput(
+        self.input_name = CSelect(
             label="Nome",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/user.svg",
+            is_editable=True,
+            items=["Usuário"]
         )
         self.input_phone = CInput(
             label="Telefone",
@@ -139,24 +145,29 @@ class OccurrenceForm(QFrame, Instances):
             label="Rodovia",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/highway.svg",
+            suggestions=HIGHWAYS,
         )
         self.input_km = CInput(
             label="Km", bg_color=self._input_bg_color, icon_path="app/icons/svg/km.svg"
         )
-        self.input_direction = CInput(
+        self.input_direction = CSelect(
             label="Sentido",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/sentido.svg",
+            items=DIRECTIONS,
         )
-        self.input_vehicle_model = CInput(
+        self.input_vehicle_model = CSelect(
             label="Veículo",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/carro.svg",
+            items=VEHICLES_MODELS,
+            is_editable=True,
         )
         self.input_vehicle_color = CInput(
             label="Cor",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/cor.svg",
+            suggestions=COLORS,
         )
         self.input_vehicle_license_plate = CInput(
             label="Placa",
@@ -173,10 +184,12 @@ class OccurrenceForm(QFrame, Instances):
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/ocupantes.svg",
         )
-        self.input_local = CInput(
+        self.input_local = CSelect(
             label="Encontra-se",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/local.svg",
+            items=LOCALS,
+            is_editable=True,
         )
         self.input_reference_point = CInput(
             label="Ponto de referência",
@@ -208,18 +221,18 @@ class OccurrenceForm(QFrame, Instances):
         self.btn_alter.setToolTip("Alterar Formulário")
 
     def clear_form(self):
-        self.input_name.clear()
+        self.input_name.clearText()
         self.input_phone.clear()
         self.input_highway.clear()
         self.input_km.clear()
-        self.input_direction.clear()
+        self.input_direction.clearText()
         self.input_problem.clear()
-        self.input_local.clear()
+        self.input_local.clearText()
         self.input_reference_point.clear()
         self.input_description.clear()
 
         if self.is_vehicle:
-            self.input_vehicle_model.clear()
+            self.input_vehicle_model.clearText()
             self.input_vehicle_color.clear()
             self.input_vehicle_license_plate.clear()
             self.input_vehicle_occupants.clear()
@@ -243,17 +256,17 @@ class OccurrenceForm(QFrame, Instances):
     def save_form(self):
         self.form_occurrence = {
             "is_vehicle": self.is_vehicle,
-            "name": self.input_name.text() or "Usuário",
+            "name": self.input_name.currentText() or "Usuário",
             "number_phone": self.input_phone.text() or "N/A",
             "highway": self.input_highway.text() or "",
             "km": self.input_km.text() or "",
-            "direction": self.input_direction.text() or "",
+            "direction": self.input_direction.currentText() or "",
             "vehicle_model": "N/A",
             "vehicle_color": "N/A",
             "vehicle_license_plate": "N/A",
             "vehicle_occupants": "N/A",
             "problem": self.input_problem.text() or "",
-            "local": self.input_local.text() or "N/A",
+            "local": self.input_local.currentText() or "N/A",
             "reference_point": self.input_reference_point.text() or "N/A",
             "description": self.input_description.text() or "",
         }
@@ -470,7 +483,7 @@ class OccurrenceForm(QFrame, Instances):
         """
         self.setStyleSheet(style_sheet)
 
-        inputs = [
+        inputs: list[CInput] = [
             self.input_name,
             self.input_phone,
             self.input_highway,
@@ -489,6 +502,7 @@ class OccurrenceForm(QFrame, Instances):
         for input_field in inputs:
             input_field._text_color = self._text_color
             input_field._bg_color = self._input_bg_color
+            input_field._border = self._input_border
             input_field.update_styles()
 
         self.title_label._text_color = self._text_color

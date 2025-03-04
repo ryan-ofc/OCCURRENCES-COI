@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QCompleter
+from PySide6.QtWidgets import QComboBox, QLabel, QVBoxLayout, QHBoxLayout, QWidget
 from PySide6.QtGui import QPixmap, QPainter
 from PySide6.QtCore import Qt
 from PySide6.QtSvg import QSvgRenderer
@@ -6,13 +6,14 @@ from development.styles import Colors, Border, type_border, Padding, BorderRadiu
 from development.elements import CTooltip
 from development.model import Instances
 
-class CInput(QWidget, Instances):
+
+class CSelect(QWidget, Instances):
     def __init__(
         self,
         label: str = "",
-        icon_path: str = None,  # Ícone
-        objectName: str = "CInput",
-        placeholder: str = None,
+        icon_path: str = None,
+        objectName: str = "CSelect",
+        items: list = None,
         width: int = None,
         height: int = None,
         minimumWidth: int = None,
@@ -26,7 +27,9 @@ class CInput(QWidget, Instances):
         hover_bg_color: Colors = None,
         hover_border: Border = None,
         padding: Padding = Padding(all=8),
-        suggestions: list = None,
+        is_editable: bool = False,
+        icon_down_arrow: str = "app/icons/svg/seta.svg",
+        icon_down_arrow_size: list = [14,32],
     ):
         super().__init__()
         Instances.__init__(
@@ -47,18 +50,20 @@ class CInput(QWidget, Instances):
             border_radius=border_radius,
         )
 
-        self._placeholder = placeholder
+        self._icon_down_arrow = icon_down_arrow
+        self._icon_down_arrow_size = icon_down_arrow_size
         self.label = QLabel(label)
         self.icon_label = QLabel()
-        self.input_field = QLineEdit()
-        self.input_field.setObjectName(objectName)
+        self.combo_box = QComboBox()
+        self.combo_box.setObjectName(objectName)
+        self.combo_box.setEditable(is_editable)
         self.icon_path = icon_path
-        self.suggestions = suggestions if suggestions else []
 
-        self.completer = QCompleter(self.suggestions, self)
-        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
-        self.completer.setFilterMode(Qt.MatchContains)
-        self.input_field.setCompleter(self.completer)
+        if items:
+            self.combo_box.addItems(items)
+
+        self.combo_box.setCurrentIndex(-1)
+        # self.combo_box.setCursor(Qt.PointingHandCursor)
 
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
@@ -90,31 +95,10 @@ class CInput(QWidget, Instances):
         if self._maximumWidth is not None and self._maximumHeight is not None:
             self.setMaximumSize(self._maximumWidth, self._maximumHeight)
 
-        if self._placeholder is not None:
-            self.input_field.setPlaceholderText(self._placeholder)
-
         if self.icon_path:
             self.setIcon(self.icon_path)
 
-    def setIcon(self, icon_path):
-        if icon_path.lower().endswith(".svg"):
-            # Renderiza SVG com alta qualidade
-            svg_renderer = QSvgRenderer(icon_path)
-            pixmap = QPixmap(20, 20)  # Aumenta o tamanho para melhor resolução
-            pixmap.fill(Qt.transparent)  # Fundo transparente
-            
-            painter = QPainter(pixmap)
-            svg_renderer.render(painter)
-            painter.end()
-        else:
-            # Renderiza imagens comuns com suavização
-            pixmap = QPixmap(icon_path).scaled(
-                20, 20, mode=Qt.SmoothTransformation
-            )
-        
-        pixmap.setDevicePixelRatio(self.devicePixelRatioF())  # Ajusta para telas de alta DPI
-        self.icon_label.setPixmap(pixmap)
-
+    
     def __style__(self):
         self.update_styles()
 
@@ -130,16 +114,18 @@ class CInput(QWidget, Instances):
 
         main_layout.setSpacing(4)
         main_layout.addLayout(label_layout)
-        main_layout.addWidget(self.input_field)
+        main_layout.addWidget(self.combo_box)
 
         self.setLayout(main_layout)
 
-    def clear(self):
-        self.input_field.clear()
+    def currentText(self):
+        return self.combo_box.currentText()
 
-    def text(self):
-        return self.input_field.text()
+    def addItem(self, text):
+        self.combo_box.addItem(text)
 
+    def addItems(self, items):
+        self.combo_box.addItems(items)
 
     def update_styles(self):
         hover_style = (
@@ -203,6 +189,30 @@ class CInput(QWidget, Instances):
                 color: {self._text_color};
                 background-color: {self._bg_color};
             }}
+            #{self._objectName}::drop-down {{
+                padding-right: 4px;
+                border-top-right-radius: {self._border_radius.top_right};
+                border-bottom-right-radius: {self._border_radius.bottom_right};
+                background-color: transparent;
+            }}
+            #{self._objectName}::down-arrow {{
+                padding-left: 3px;
+                padding-right: 5px;
+                border-left: {self._border if self._border else 'transparent'};
+                image: url({self._icon_down_arrow});
+                width: {self._icon_down_arrow_size[0]};
+                height: {self._icon_down_arrow_size[1]};
+            }}
+            #{self._objectName}::down-arrow:hover {{
+                border-left: {self._border if self._border else 'transparent'};
+            }}
+            #{self._objectName} QAbstractItemView {{
+                border: 1px solid #ccc;
+                background-color: {self._bg_color};
+                selection-background-color: #0078D7;
+                selection-color: {self._text_color};
+                color: {self._text_color};
+            }}
             QLabel {{
                 font-size: 11px;
                 padding-left: 0px;
@@ -219,6 +229,24 @@ class CInput(QWidget, Instances):
             {self._toolTip.styleSheet()}
         """
         self.setStyleSheet(style_sheet)
-        self.input_field.setStyleSheet(style_sheet)
+        self.combo_box.setStyleSheet(style_sheet)
         self.label.setStyleSheet(style_sheet)
         self.update()
+
+    def setIcon(self, icon_path):
+        if icon_path.lower().endswith(".svg"):
+            svg_renderer = QSvgRenderer(icon_path)
+            pixmap = QPixmap(20, 20)
+            pixmap.fill(Qt.transparent)
+
+            painter = QPainter(pixmap)
+            svg_renderer.render(painter)
+            painter.end()
+        else:
+            pixmap = QPixmap(icon_path).scaled(20, 20, mode=Qt.SmoothTransformation)
+
+        pixmap.setDevicePixelRatio(self.devicePixelRatioF())
+        self.icon_label.setPixmap(pixmap)
+
+    def clearText(self):
+        self.combo_box.setCurrentIndex(-1)
