@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import QSize, Qt
-from development.styles import Colors, Border, BorderRadius, type_border
+from development.styles import Colors, Border, BorderRadius, type_border, rgba
 from development.elements import CTooltip
 from development.model import Instances
 from .custom_button import CButton
@@ -27,7 +27,7 @@ class CTable(QTableWidget, Instances):
         minimumHeight: int = None,
         maximumWidth: int = 4096,
         maximumHeight: int = 2160,
-        bg_color: Colors = Colors.white,
+        bg_color: rgba = Colors.white,
         border: Border = None,
         border_radius: BorderRadius = None,
         hover_bg_color: Colors = None,
@@ -35,9 +35,11 @@ class CTable(QTableWidget, Instances):
         text_color: Colors = Colors.black.adjust_tonality(75),
         vertical: bool = True,
         horizontal: bool = True,
-        fg_color: Colors = Colors.gray.adjust_tonality(70),
+        fg_color: rgba = Colors.gray.adjust_tonality(70),
         next_action: callable = None,
         previous_action: callable = None,
+        edit_action: callable = None,
+        update_data: callable = None,
     ):
         QTableWidget.__init__(self, rows, columns)
         Instances.__init__(
@@ -58,6 +60,8 @@ class CTable(QTableWidget, Instances):
         )
         self.next_action = next_action
         self.previous_action = previous_action
+        self.edit_action = edit_action
+        self.update_data = update_data
         self._fg_color = fg_color
         self._toolTip = CTooltip(
             bg_color=self._bg_color,
@@ -89,6 +93,10 @@ class CTable(QTableWidget, Instances):
         self.setEditTriggers(QTableWidget.NoEditTriggers)
 
         self.itemDoubleClicked.connect(self.clipboard_row)
+
+        self._cell_bg_color = rgba(
+            r=self._bg_color.r**0.95, g=self._bg_color.g**0.95, b=self._bg_color.b**0.95
+        )
 
         self.__setup__()
 
@@ -124,7 +132,7 @@ class CTable(QTableWidget, Instances):
             minimumHeight=30,
         )
         self.btn_previous = CButton(
-            text="Voltar",
+            text="Anterior",
             onClick=self.previous_action,
             bg_color=Colors.gray,
             text_color=Colors.white,
@@ -132,11 +140,33 @@ class CTable(QTableWidget, Instances):
             minimumWidth=70,
             minimumHeight=30,
         )
+        self.btn_update = CButton(
+            text="",
+            onClick=self.update_data,
+            bg_color="#AEFFAE",
+            text_color=Colors.white,
+            hover_bg_color="#94FF94",
+            border_radius=BorderRadius(all=16),
+            minimumWidth=30,
+            minimumHeight=30,
+        )
+
+        self.btn_next.setToolTip("Próxima página")
+        self.btn_previous.setToolTip("Página anterior")
+        self.btn_update.setToolTip("Atualizar")
+
+        icon_path = "app/icons/svg/update.svg"
+        self.btn_update.setIcon(QIcon(icon_path))
+        self.btn_update.setIconSize(QSize(18, 18))
+
+        self.btn_update._toolTip.bg_color = "#009C00"
+        self.btn_update.update_styles()
 
         # Criar um layout horizontal para os botões
         btn_layout = QHBoxLayout()
         btn_layout.addWidget(self.btn_previous)
         btn_layout.addWidget(self.btn_next)
+        btn_layout.addWidget(self.btn_update)
 
         main_layout = QVBoxLayout(self)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -200,10 +230,14 @@ class CTable(QTableWidget, Instances):
         self.header_vertical.setStyleSheet(
             f"background-color: {self._bg_color}; color: {self._text_color};"
         )
+        self._cell_bg_color = rgba(
+            r=self._bg_color.r**0.95, g=self._bg_color.g**0.95, b=self._bg_color.b**0.95
+        )
         for row in range(self.rowCount()):
             cell_widget = self.cellWidget(row, self.columnCount() - 1)
             if isinstance(cell_widget, CButton):
                 cell_widget._bg_color = self._bg_color
+                cell_widget._hover_bg_color = self._cell_bg_color
                 cell_widget.update_styles()
 
     def set_headers(self, headers: list[str]):
@@ -220,17 +254,16 @@ class CTable(QTableWidget, Instances):
             self.setItem(row_position, col, item)
 
         edit_button = CButton(
-            text="", bg_color=self._bg_color, border_radius=BorderRadius(all=0)
+            text="",
+            bg_color=self._bg_color,
+            hover_bg_color=self._cell_bg_color,
+            border_radius=BorderRadius(all=0),
+            onClick=lambda: self.edit_action(row_data[0]),
         )
+        edit_button._toolTip.bg_color = Colors.white
         edit_button.setToolTip(f"ID: {row_data[0]}")
         icon_path = "app/icons/svg/lapis.svg"
         edit_button.setIcon(QIcon(QPixmap(icon_path)))
         edit_button.setIconSize(QSize(20, 20))
 
-        edit_button.clicked.connect(lambda: self.edit_row(row_position))
-
         self.setCellWidget(row_position, len(row_data), edit_button)
-
-    def edit_row(self, row_index: int):
-        data = self.get_row_values(row_index)
-        print(data)

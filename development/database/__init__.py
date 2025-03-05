@@ -1,5 +1,4 @@
 import sqlite3
-from development.utils.occurrence import Occurrence
 from typing import Optional, List, Tuple, Any
 from math import ceil
 
@@ -10,7 +9,7 @@ class ResponseSearch:
         page: int = None,
         total_pages: int = None,
         total_rows: int = None,
-        data: List[Occurrence] = None,
+        data = None,
     ):
         self.page = page
         self.total_pages = total_pages
@@ -99,7 +98,7 @@ class SQLiteManager:
             results = db.cursor.fetchall()
 
         total_pages = ceil(total_rows / rows) if total_rows > 0 else 1
-
+        from development.utils.occurrence import Occurrence
         occurrences = [
             Occurrence(
                 id=row[0],

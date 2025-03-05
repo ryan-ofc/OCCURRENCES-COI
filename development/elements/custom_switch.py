@@ -10,10 +10,11 @@ class CSwitch(QCheckBox):
         self.on_switch = on_switch
         self._bg_color = bg_color
         self._text_color = text_color
+        self.initial_state = initial_state
         self.stateChanged.connect(self.switch)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-        self.setChecked(initial_state)
+        self.setChecked(self.initial_state)
         self.setFixedSize(70, 30)
 
         # Criando o QFrame para a bolinha

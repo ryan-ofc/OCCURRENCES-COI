@@ -15,25 +15,27 @@ from development import (
     Qt,
     SQLiteManager,
     CTable,
+    OccurrenceEditForm,
     os,
     time,
     sys,
 )
+from PySide6.QtCore import QTimer
 
 
 class App(CMainWindow):
     def __init__(
         self,
-        title="Cadastro de ocorrências",
-        width=500,
+        title="Formulário de ocorrências",
+        width=400,
         height=600,
-        minimumWidth=500,
+        minimumWidth=400,
         minimumHeight=600,
         maximumWidth=None,
         maximumHeight=None,
         bg_color: rgba = Colors.gray.adjust_tonality(100),
         text_color: rgba = Colors.black,
-        icon: str | bytes = "app/icons/svg/icon.svg",
+        icon: str | bytes = "app/coi.png",
     ):
 
         super().__init__(
@@ -87,8 +89,8 @@ class App(CMainWindow):
     def ui_toggle_theme(self):
         self.btn_toggle_theme = ToggleTheme(
             self,
-            icon_light="sun.svg",
-            icon_dark="moon.svg",
+            icon_light="app/icons/svg/sun.svg",
+            icon_dark="app/icons/svg/moon.svg",
             bg_light=self.theme_light.toggle_theme.bg_color,
             bg_dark=self.theme_dark.toggle_theme.bg_color,
         )
@@ -107,8 +109,8 @@ class App(CMainWindow):
         self.occurrence_form = OccurrenceForm(
             bg_color=self.theme_light.occurrenceForm.bg_color,
             text_color=self.theme_light.occurrenceForm.text_color,
-            minimumWidth=485,
-            minimumHeight=585,
+            minimumWidth=385,
+            minimumHeight=555,
             maximumWidth=485,
             maximumHeight=585,
             border_radius=BorderRadius(all=8),
@@ -130,18 +132,75 @@ class App(CMainWindow):
             maximumWidth=1200,
             next_action=self.next_page,
             previous_action=self.previous_page,
-            border_radius=BorderRadius(bottom_left=8,bottom_right=8),
+            edit_action=self.edit_action,
+            update_data=self.upload_data,
+            border_radius=BorderRadius(bottom_left=8, bottom_right=8),
             border=Border(
                 pixel=1,
                 type_border=type_border.solid,
                 color=Colors.gray.adjust_tonality(80),
             ),
         )
-        self.table_occurrences.set_headers(["ID","Nome","Telefone","Rodovia","Km","Sentido","Problema","Encontra-se","Ponto de referência", "Ações"])
+        self.table_occurrences.set_headers(
+            [
+                "ID",
+                "Nome",
+                "Telefone",
+                "Rodovia",
+                "Km",
+                "Sentido",
+                "Problema",
+                "Encontra-se",
+                "Ponto de referência",
+                "Ações",
+            ]
+        )
         for oc in self.responseSearch.data:
-            self.table_occurrences.add_row([str(oc.id), oc.name, oc.phone, oc.highway, oc.km or "", oc.direction, oc.problem, oc.local, oc.reference_point])
+            self.table_occurrences.add_row(
+                [
+                    str(oc.id),
+                    oc.name,
+                    oc.phone,
+                    oc.highway,
+                    str(oc.km) or "",
+                    oc.direction,
+                    oc.problem,
+                    oc.local,
+                    oc.reference_point,
+                ]
+            )
 
         self.occurrence_form.update_table = self.load_page
+
+    def upload_data(self):
+        self.table_occurrences.btn_update
+        self.table_occurrences.setRowCount(0)
+        self.page = 1
+        QTimer.singleShot(1000, self.update_button_and_load_page)
+
+    def update_button_and_load_page(self):
+        self.load_page()
+        
+        self.table_occurrences.btn_update.setEnabled(True)
+
+    def edit_action(self, id: int):
+        from development.utils.occurrence import Occurrence
+
+        occurrence = Occurrence(id=id)
+        occurrence.get()
+
+        occurrenceEditForm = OccurrenceEditForm(
+            occurrence=occurrence,
+            minimumWidth=400,
+            minimumHeight=600,
+            maximumWidth=400,
+            maximumHeight=600,
+        )
+        occurrenceEditForm.setWindowTitle(f"ID: {occurrence.id}")
+        occurrenceEditForm.setIcon("app/coi.png")
+        occurrenceEditForm.exec()
+        self.page = 1
+        self.load_page()
 
     def setThemeLight(self):
         light = self.theme_light
@@ -155,6 +214,8 @@ class App(CMainWindow):
         self.table_occurrences._bg_color = light.occurrenceTable.bg_color
         self.table_occurrences._text_color = light.occurrenceTable.text_color
         self.table_occurrences._fg_color = light.occurrenceTable.fg_color
+        self.table_occurrences.btn_update._bg_color = "#AEFFAE"
+        self.table_occurrences.btn_update._hover_bg_color = "#94FF94"
 
     def setThemeDark(self):
         dark = self.theme_dark
@@ -168,6 +229,8 @@ class App(CMainWindow):
         self.table_occurrences._bg_color = dark.occurrenceTable.bg_color
         self.table_occurrences._text_color = dark.occurrenceTable.text_color
         self.table_occurrences._fg_color = dark.occurrenceTable.fg_color
+        self.table_occurrences.btn_update._bg_color = "#001C00"
+        self.table_occurrences.btn_update._hover_bg_color = "#003000"
 
     def setTheme(self, theme: Themes):
         if theme == Themes.light:
@@ -189,6 +252,7 @@ class App(CMainWindow):
         self.content.update_styles()
         self.occurrence_form.update_styles()
         self.table_occurrences.update_styles()
+        self.table_occurrences.btn_update.update_styles()
 
         self.btn_toggle_theme.switch_theme()
 
@@ -252,7 +316,9 @@ class App(CMainWindow):
             """
             )
 
-            self.responseSearch = db.searchPagination(search=self.search,page=self.page,rows=self.rows)
+            self.responseSearch = db.searchPagination(
+                search=self.search, page=self.page, rows=self.rows
+            )
             self.total_pages = self.responseSearch.total_pages
             self.total_rows = self.responseSearch.total_rows
 
@@ -272,11 +338,31 @@ class App(CMainWindow):
         db_path = "app/database/database.db"
 
         with SQLiteManager(db_name=db_path) as db:
-            response = db.searchPagination(search=self.search, page=self.page, rows=self.rows)
-            self.page, self.total_pages, self.total_rows, data = response.page, response.total_pages, response.total_rows, response.data
+            response = db.searchPagination(
+                search=self.search, page=self.page, rows=self.rows
+            )
+            self.page, self.total_pages, self.total_rows, data = (
+                response.page,
+                response.total_pages,
+                response.total_rows,
+                response.data,
+            )
 
             for oc in data:
-                self.table_occurrences.add_row([str(oc.id), oc.name, oc.phone, oc.highway, oc.km or "", oc.direction, oc.problem, oc.local, oc.reference_point])
+                self.table_occurrences.add_row(
+                    [
+                        str(oc.id),
+                        oc.name,
+                        oc.phone,
+                        oc.highway,
+                        str(oc.km) or "",
+                        oc.direction,
+                        oc.problem,
+                        oc.local,
+                        oc.reference_point,
+                    ]
+                )
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

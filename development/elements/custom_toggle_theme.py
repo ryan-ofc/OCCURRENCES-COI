@@ -55,20 +55,15 @@ class ToggleTheme(QPushButton):
         self.set_icon(self._icon_light)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-    def set_icon(self, icon_name: str):
-        """Sets the button icon from an SVG."""
-        base_path = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", "..", "app", "icons", "svg")
-        )
-        full_path = os.path.join(base_path, icon_name)
-        renderer = QSvgRenderer(full_path)
+    def set_icon(self, icon_path: str):
+        renderer = QSvgRenderer(icon_path)
         image = QImage(self._iconSize[0], self._iconSize[1], QImage.Format_ARGB32)
         image.fill(0)
         painter = QPainter(image)
         renderer.render(painter)
         painter.end()
 
-        self.setIcon(QIcon(full_path))
+        self.setIcon(QIcon(icon_path))
         self.setIconSize(QSize(self._iconSize[0] - 10, self._iconSize[1] - 10))
 
     def switch_theme(self):

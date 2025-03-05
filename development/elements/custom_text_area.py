@@ -27,6 +27,7 @@ class CTextArea(QWidget, Instances):
         only_numbers: bool = False,
         no_special_chars: bool = False,
         only_uppercase: bool = False,
+        value: str = None,
     ):
         super().__init__()
         Instances.__init__(
@@ -50,11 +51,15 @@ class CTextArea(QWidget, Instances):
         self.only_numbers = only_numbers
         self.no_special_chars = no_special_chars
         self.only_uppercase = only_uppercase
+        self.value = value
 
         self.label = QLabel(label)
         self.text_area = QTextEdit()
         self.text_area.setObjectName(objectName)
         self.text_area.setPlaceholderText(placeholder)
+
+        if self.value:
+            self.text_area.setText(str(self.value))
 
         self.text_area.textChanged.connect(self.__on_text_changed)
         

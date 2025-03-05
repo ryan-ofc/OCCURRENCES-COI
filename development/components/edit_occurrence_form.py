@@ -1,4 +1,7 @@
-from PySide6.QtWidgets import QFrame, QSpacerItem, QSizePolicy
+from PySide6.QtWidgets import QDialog, QSpacerItem, QSizePolicy
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont, QStandardItem
+from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtCore import QByteArray, Qt
 from development.styles import (
     Colors,
     Border,
@@ -21,13 +24,16 @@ from development.elements import (
 )
 from development.model import Instances
 from development.constants import *
-from PySide6.QtGui import QColor, QFont, QStandardItem
+from ..utils import Occurrence
+import base64
+import os
 
 
-class OccurrenceForm(QFrame, Instances):
+class OccurrenceEditForm(QDialog, Instances):
     def __init__(
         self,
-        objectName: str = "OccurrenceForm",
+        occurrence: Occurrence,
+        objectName: str = "OccurrenceEditForm",
         width: int = None,
         height: int = None,
         minimumWidth: int = None,
@@ -45,7 +51,7 @@ class OccurrenceForm(QFrame, Instances):
         padding: Padding = None,
         update_table: callable = None,
     ):
-        QFrame.__init__(self)
+        QDialog.__init__(self)
         Instances.__init__(
             self,
             objectName=objectName,
@@ -63,6 +69,7 @@ class OccurrenceForm(QFrame, Instances):
             text_color=text_color,
             padding=padding,
         )
+        self.occurrence = occurrence
         self.is_vehicle = True
         self.update_table = update_table
         self._input_bg_color = input_bg_color
@@ -128,6 +135,47 @@ class OccurrenceForm(QFrame, Instances):
         self.ui_inputs()
         self.ui_boxes()
 
+    def setIcon(self, source: str | bytes):
+        """Define um ícone para a janela a partir de um arquivo ou Base64 (suporte para PNG, JPG e SVG)."""
+        if os.path.exists(source):
+            icon = QIcon(source)  # Arquivo de imagem ou SVG
+        else:
+            icon = self.__load_icon_from_base64(source)
+
+        self.setWindowIcon(icon)
+
+    def __load_icon_from_base64(self, base64_str):
+        """Converte uma string Base64 em um QIcon, suportando PNG, JPG e SVG."""
+        try:
+            image_data = base64.b64decode(base64_str)
+
+            # Verifica se o dado é um SVG
+            if b"<svg" in image_data:
+                return self.__convert_svg_to_icon(image_data)
+
+            # Caso contrário, assume que é PNG/JPG
+            pixmap = QPixmap()
+            pixmap.loadFromData(image_data)
+            return QIcon(pixmap)
+        except Exception:
+            return QIcon()
+
+    def __convert_svg_to_icon(self, svg_data):
+        """Converte um arquivo SVG Base64 em um QIcon."""
+        try:
+            renderer = QSvgRenderer(QByteArray(svg_data))
+            pixmap = QPixmap(128, 128)
+            pixmap.fill(Qt.transparent)
+
+            # Renderiza o SVG no pixmap
+            painter = QPainter(pixmap)
+            renderer.render(painter)
+            painter.end()
+
+            return QIcon(pixmap)
+        except Exception:
+            return QIcon()
+
     def ui_inputs(self):
         self.input_name = CSelect(
             label="Nome",
@@ -138,6 +186,8 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.name,
+            default_value=True,
         )
         self.input_phone = CInput(
             label="Telefone",
@@ -146,6 +196,7 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=True,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.phone,
         )
         self.input_highway = CInput(
             label="Rodovia",
@@ -155,6 +206,7 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.highway,
         )
         self.input_km = CInput(
             label="Km",
@@ -163,6 +215,7 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=True,
             only_uppercase=False,
             no_special_chars=False,
+            value=self.occurrence.km,
         )
         self.input_direction = CSelect(
             label="Sentido",
@@ -172,6 +225,8 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.direction,
+            default_value=True,
         )
         self.input_vehicle_model = CSelect(
             label="Veículo",
@@ -182,6 +237,8 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.vehicle,
+            default_value=True,
         )
         self.input_vehicle_color = CInput(
             label="Cor",
@@ -191,6 +248,7 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.color,
         )
         self.input_vehicle_license_plate = CInput(
             label="Placa",
@@ -199,6 +257,7 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.license_plate,
         )
         self.input_problem = CSelect(
             label="Problema",
@@ -218,6 +277,7 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.occupantes,
         )
         self.input_local = CSelect(
             label="Encontra-se",
@@ -228,6 +288,8 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.color,
+            default_value=True,
         )
         self.input_reference_point = CInput(
             label="Ponto de referência",
@@ -236,6 +298,7 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.reference_point,
         )
         self.input_description = CTextArea(
             label="Observações",
@@ -243,6 +306,7 @@ class OccurrenceForm(QFrame, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
+            value=self.occurrence.observations,
         )
 
         self.btn_save = CButton(
@@ -252,72 +316,60 @@ class OccurrenceForm(QFrame, Instances):
             text_color=Colors.white,
             onClick=self.confirm_save_form,
         )
-        self.btn_clear = CButton(
-            text="Limpar",
+        self.btn_clipboard = CButton(
+            text="Copiar",
             bg_color=Colors.gray,
             hover_bg_color=Colors.gray.adjust_tonality(60),
             text_color=Colors.white,
-            onClick=self.confirm_clear_form,
+            onClick=self.clipboard_form,
         )
         self.btn_alter = CSwitch(on_switch=self.alter_form)
 
         self.btn_save.setToolTip("CTRL + ENTER")
-        self.btn_clear.setToolTip("Limpar campos")
+        self.btn_clipboard.setToolTip("Copiar")
         self.btn_alter.setToolTip("Alterar Formulário")
 
         self.problems()
 
-    def clear_form(self):
-        self.input_name.clearText()
-        self.input_phone.clear()
-        self.input_highway.clear()
-        self.input_km.clear()
-        self.input_direction.clearText()
-        self.input_problem.clearText()
-        self.input_local.clearText()
-        self.input_reference_point.clear()
-        self.input_description.clear()
-
-        if self.is_vehicle:
-            self.input_vehicle_model.clearText()
-            self.input_vehicle_color.clear()
-            self.input_vehicle_license_plate.clear()
-            self.input_vehicle_occupants.clear()
-
-        self.form_occurrence = {
-            "name": None,
-            "number_phone": None,
-            "highway": None,
-            "km": None,
-            "direction": None,
-            "vehicle_model": None,
-            "vehicle_color": None,
-            "vehicle_license_plate": None,
-            "vehicle_occupants": None,
-            "problem": None,
-            "local": None,
-            "reference_point": None,
-            "description": None,
-        }
-
-    def save_form(self):
+    def clipboard_form(self):
         self.form_occurrence = {
             "is_vehicle": self.is_vehicle,
             "name": self.input_name.currentText() or "Usuário",
             "number_phone": self.input_phone.text() or "N/A",
             "highway": self.input_highway.text() or "",
-            "km": self.input_km.text() or 0,
+            "km": self.input_km.text() or "",
             "direction": self.input_direction.currentText() or "",
-            "vehicle_model": self.input_vehicle_model.currentText() or "",
-            "vehicle_color": self.input_vehicle_color.text() or "N/A",
-            "vehicle_license_plate": self.input_vehicle_license_plate.text() or "N/A",
-            "vehicle_occupants": self.input_vehicle_occupants.text() or "N/A",
+            "vehicle_model": "N/A",
+            "vehicle_color": "N/A",
+            "vehicle_license_plate": "N/A",
+            "vehicle_occupants": "N/A",
             "problem": self.input_problem.currentText() or "",
             "local": self.input_local.currentText() or "N/A",
             "reference_point": self.input_reference_point.text() or "N/A",
             "description": self.input_description.text() or "",
         }
-        
+        if self.is_vehicle:
+            self.form_occurrence["vehicle_model"] = (
+                self.input_vehicle_model.currentText()
+                if self.input_vehicle_model.currentText()
+                else "N/A"
+            )
+            self.form_occurrence["vehicle_color"] = (
+                self.input_vehicle_color.text()
+                if self.input_vehicle_color.text()
+                else "N/A"
+            )
+            self.form_occurrence["vehicle_license_plate"] = (
+                self.input_vehicle_license_plate.text()
+                if self.input_vehicle_license_plate.text()
+                else "N/A"
+            )
+            self.form_occurrence["vehicle_occupants"] = (
+                self.input_vehicle_occupants.text()
+                if self.input_vehicle_occupants.text()
+                else "N/A"
+            )
+
         try:
             from development.modules import Occurrence
 
@@ -338,14 +390,62 @@ class OccurrenceForm(QFrame, Instances):
                 is_vehicle=self.is_vehicle,
             )
 
-            self.new_occurrence.save()
             self.new_occurrence.clipboard()
-            self.clear_form()
+            self.destroy(True)
+
+        except Exception as e:
             message = CMessageBox(
-                self, title="Notificação", text="Formulário salvo com sucesso!"
+                self, title="Atenção", text=str(e), icon_type=CMessageBox.Icon.critical
             )
-            self.update_table()
             message.show()
+
+    def save_form(self):
+        self.form_occurrence = {
+            "id": self.occurrence.id,
+            "is_vehicle": self.is_vehicle,
+            "name": self.input_name.currentText() or "Usuário",
+            "number_phone": self.input_phone.text() or "N/A",
+            "highway": self.input_highway.text() or "",
+            "km": self.input_km.text() or "",
+            "direction": self.input_direction.currentText() or "",
+            "vehicle_model": self.input_vehicle_model.currentText() or "",
+            "vehicle_color": self.input_vehicle_color.text() or "N/A",
+            "vehicle_license_plate": self.input_vehicle_license_plate.text() or "N/A",
+            "vehicle_occupants": self.input_vehicle_occupants.text() or "N/A",
+            "problem": self.input_problem.currentText() or "",
+            "local": self.input_local.currentText() or "N/A",
+            "reference_point": self.input_reference_point.text() or "N/A",
+            "description": self.input_description.text() or "",
+        }
+
+        try:
+            from development.modules import Occurrence
+
+            self.new_occurrence = Occurrence(
+                id=self.form_occurrence.get("id"),
+                name=self.form_occurrence.get("name"),
+                phone=self.form_occurrence.get("number_phone"),
+                highway=self.form_occurrence.get("highway"),
+                km=self.form_occurrence.get("km"),
+                direction=self.form_occurrence.get("direction"),
+                vehicle=self.form_occurrence.get("vehicle_model"),
+                color=self.form_occurrence.get("vehicle_color"),
+                license_plate=self.form_occurrence.get("vehicle_license_plate"),
+                occupantes=self.form_occurrence.get("vehicle_occupants"),
+                problem=self.form_occurrence.get("problem"),
+                local=self.form_occurrence.get("local"),
+                reference_point=self.form_occurrence.get("reference_point"),
+                observations=self.form_occurrence.get("description"),
+                is_vehicle=self.is_vehicle,
+            )
+
+            self.new_occurrence.update()
+            self.new_occurrence.clipboard()
+            message = CMessageBox(
+                self, title="Notificação", text="Ocorrência atualizada!"
+            )
+            message.show()
+            self.destroy(True)
 
         except Exception as e:
             message = CMessageBox(
@@ -389,7 +489,11 @@ class OccurrenceForm(QFrame, Instances):
                 "Canino morto na via",
             ]
         )
-        self.input_problem.combo_box.setCurrentIndex(-1)
+        if self.occurrence.problem:
+            self.input_problem.combo_box.insertItem(0, self.occurrence.problem)
+            self.input_problem.combo_box.setCurrentText(self.occurrence.problem)
+        else:
+            self.input_problem.combo_box.setCurrentIndex(-1)
 
     def problems(self):
         self.add_title("─── Mecânicos ───", "darkgreen")
@@ -411,7 +515,12 @@ class OccurrenceForm(QFrame, Instances):
                 "Pneu furado / Danificado, possui estepe: Não",
             ]
         )
-        self.input_problem.combo_box.setCurrentIndex(-1)
+ 
+        if self.occurrence.problem:
+            self.input_problem.combo_box.insertItem(0, self.occurrence.problem)
+            self.input_problem.combo_box.setCurrentText(self.occurrence.problem)
+        else:
+            self.input_problem.combo_box.setCurrentIndex(-1)
 
     def add_title(self, title, color):
         """Adiciona um título desabilitado e colorido no QComboBox"""
@@ -429,7 +538,7 @@ class OccurrenceForm(QFrame, Instances):
         message = CMessageBox(
             self,
             title="Confirmação",
-            text="Deseja realmente salvar?",
+            text="Salvar alterações e copiar?",
             buttons=CMessageBox.double_choice(),
             icon_type=CMessageBox.Icon.information,
         )
@@ -495,8 +604,10 @@ class OccurrenceForm(QFrame, Instances):
         self.form_layout_6.addWidget(self.input_description)
 
         self.form_layout_7.addWidget(self.btn_save)
-        self.form_layout_7.addWidget(self.btn_clear)
+        self.form_layout_7.addWidget(self.btn_clipboard)
         self.form_layout_7.addWidget(self.btn_alter)
+
+        self.btn_alter.setChecked(not self.occurrence.is_vehicle)
 
     def update_styles(self):
         hover_style = (

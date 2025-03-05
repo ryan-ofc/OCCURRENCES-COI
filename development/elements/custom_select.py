@@ -34,6 +34,8 @@ class CSelect(QWidget, Instances):
         only_numbers: bool = False,
         no_special_chars: bool = False,
         only_uppercase: bool = False,
+        default_value: bool = False,
+        value: str = None,
     ):
         super().__init__()
         Instances.__init__(
@@ -62,6 +64,8 @@ class CSelect(QWidget, Instances):
         self.combo_box.setObjectName(objectName)
         self.combo_box.setEditable(is_editable)
         self.icon_path = icon_path
+        self.default_value = default_value
+        self.value = value
 
         self.only_numbers = only_numbers
         self.no_special_chars = no_special_chars
@@ -70,7 +74,16 @@ class CSelect(QWidget, Instances):
         if items:
             self.combo_box.addItems([self.apply_filters(item) for item in items])
 
-        self.combo_box.setCurrentIndex(-1)
+        if self.value is not None:
+            if self.value in [self.combo_box.itemText(i) for i in range(self.combo_box.count())]:
+                self.combo_box.setCurrentText(self.value)
+            else:
+                self.combo_box.addItem(self.value)
+                self.combo_box.setCurrentText(str(self.value))
+
+        if not (self.default_value):
+            self.combo_box.setCurrentIndex(-1)
+
         self.combo_box.editTextChanged.connect(self.on_text_changed)
 
         self._toolTip = CTooltip(
@@ -124,6 +137,16 @@ class CSelect(QWidget, Instances):
         main_layout.addWidget(self.combo_box)
 
         self.setLayout(main_layout)
+
+    def setSelectionValue(self, value: str):
+        if value in [self.combo_box.itemText(i) for i in range(self.combo_box.count())]:
+            self.combo_box.setCurrentText(value)
+        else:
+            self.combo_box.addItem(value)
+            self.combo_box.setCurrentText(str(value))
+
+    def setValue(self, value: str):
+        self.value = value
 
     def currentText(self):
         return self.combo_box.currentText()

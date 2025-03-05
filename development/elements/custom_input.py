@@ -32,6 +32,7 @@ class CInput(QWidget, Instances):
         only_numbers: bool = False,
         no_special_chars: bool = False,
         only_uppercase: bool = False,
+        value: str = None,
     ):
         super().__init__()
         Instances.__init__(
@@ -62,6 +63,7 @@ class CInput(QWidget, Instances):
         self.only_numbers = only_numbers
         self.no_special_chars = no_special_chars
         self.only_uppercase = only_uppercase
+        self.value = value
 
         self.completer = QCompleter(self.suggestions, self)
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
@@ -82,6 +84,9 @@ class CInput(QWidget, Instances):
         )
 
         self.__setup__()
+
+        if self.value is not None:
+            self.input_field.setText(str(self.value))
     
         self.input_field.textChanged.connect(self.__on_text_changed)
 
@@ -253,4 +258,3 @@ class CInput(QWidget, Instances):
 
     def setOnlyUppercase(self, role: bool):
         self.only_uppercase = role
-        

@@ -70,22 +70,47 @@ class Occurrence:
                 );
             """)
 
+    def __converte_km(self, km: int) -> str | None:
+        self.new_km: int = None
+        self.margin_km: str = None
+        margin: int = 5
+
+        match self.direction.lower():
+            case "crescente":     
+                self.new_km = km + margin
+                self.margin_km = f"{km} - {self.new_km}"
+
+            case "decrescente":
+                if (km <= 4 and km > 0):
+                    self.new_km = 0
+                    self.margin_km = f"{km} - {self.new_km}"
+
+                elif (km >= margin):
+                    self.new_km = km - margin
+                    self.margin_km = f"{km} - {self.new_km}"
+                
+                else:
+                    self.margin_km = str(km)
+
+            case "verificar ambos sentidos":
+                self.margin_km = str(km)
+
+            case _:
+                self.margin_km = str(self.km)
+        
+        return self.margin_km
+
     def clipboard(self):
         observacao = f"OBS: {self.observations}\n\n" if self.observations else ""
 
         if self.is_vehicle:
-            texto = f"{observacao}RODOVIA: {self.highway}\nKM: {self.km}\nSENTIDO: {self.direction}\n\nVEÍCULO: {self.vehicle}\nCOR: {self.color}\nPLACA: {self.license_plate}\n\nPROBLEMA: {self.problem}\nOCUPANTES: {self.occupantes}\nENCONTRA-SE: {self.local}\n\nPONTO DE REFERÊNCIA: {self.reference_point}"
+            texto = f"{observacao}RODOVIA: {self.highway}\nKM: {self.__converte_km(int(self.km))}\nSENTIDO: {self.direction}\n\nVEÍCULO: {self.vehicle}\nCOR: {self.color}\nPLACA: {self.license_plate}\n\nPROBLEMA: {self.problem}\nOCUPANTES: {self.occupantes}\nENCONTRA-SE: {self.local}\n\nPONTO DE REFERÊNCIA: {self.reference_point}"
         else:
-            texto = f"{observacao}RODOVIA: {self.highway}\nKM: {self.km}\nSENTIDO: {self.direction}\n\nPROBLEMA: {self.problem}\nENCONTRA-SE: {self.local}\n\nPONTO DE REFERÊNCIA: {self.reference_point}"
+            texto = f"{observacao}RODOVIA: {self.highway}\nKM: {self.__converte_km(int(self.km))}\nSENTIDO: {self.direction}\n\nPROBLEMA: {self.problem}\nENCONTRA-SE: {self.local}\n\nPONTO DE REFERÊNCIA: {self.reference_point}"
 
         pyperclip.copy(texto)
     
     def save(self) -> int:
-        vehicle = self.vehicle if self.is_vehicle else None
-        color = self.color if self.is_vehicle else None
-        license_plate = self.license_plate if self.is_vehicle else None
-        occupantes = self.occupantes if self.is_vehicle else None
-
         query = """
         INSERT INTO occurrences (
             name, phone, highway, km, direction, vehicle, color, 
@@ -94,19 +119,14 @@ class Occurrence:
         """
         params: Tuple = (
             self.name, self.phone, self.highway, self.km, self.direction,
-            vehicle, color, license_plate, self.problem,
-            occupantes, self.local, self.reference_point, self.observations, self.is_vehicle
+            self.vehicle, self.color, self.license_plate, self.problem,
+            self.occupantes, self.local, self.reference_point, self.observations, self.is_vehicle
         )
         return self.execute(query, params, fetch_id=True)
 
     def update(self):
         if self.id is None:
             raise ValueError("ID da ocorrência não pode ser None para atualizar.")
-        
-        vehicle = self.vehicle if self.is_vehicle else None
-        color = self.color if self.is_vehicle else None
-        license_plate = self.license_plate if self.is_vehicle else None
-        occupantes = self.occupantes if self.is_vehicle else None
 
         query = """
         UPDATE occurrences
@@ -116,8 +136,8 @@ class Occurrence:
         """
         params: Tuple = (
             self.name, self.phone, self.highway, self.km, self.direction,
-            vehicle, color, license_plate, self.problem,
-            occupantes, self.local, self.reference_point, self.observations, self.is_vehicle, self.id
+            self.vehicle, self.color, self.license_plate, self.problem,
+            self.occupantes, self.local, self.reference_point, self.observations, self.is_vehicle, self.id
         )
         self.execute(query, params)
 
@@ -185,3 +205,37 @@ class Occurrence:
         ]
 
         return occurrences
+
+    def get(self) -> None:
+        if self.id is None:
+            raise ValueError("ID da ocorrência não pode ser None para buscar.")
+
+        query = """
+        SELECT id, name, phone, highway, km, direction, vehicle, color, license_plate, 
+            problem, occupantes, local, reference_point, observations, is_vehicle
+        FROM occurrences
+        WHERE id = ?
+        """
+
+        with self.db_manager as db:
+            db.execute(query, (self.id,))
+            result = db.cursor.fetchone()
+
+        if result:
+            self.id = result[0]
+            self.name = result[1]
+            self.phone = result[2]
+            self.highway = result[3]
+            self.km = result[4]
+            self.direction = result[5]
+            self.vehicle = result[6]
+            self.color = result[7]
+            self.license_plate = result[8]
+            self.problem = result[9]
+            self.occupantes = result[10]
+            self.local = result[11]
+            self.reference_point = result[12]
+            self.observations = result[13]
+            self.is_vehicle = result[14]
+        else:
+            raise ValueError(f"Ocorrência com ID {self.id} não encontrada.")
