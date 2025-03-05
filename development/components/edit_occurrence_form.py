@@ -406,7 +406,7 @@ class OccurrenceEditForm(QDialog, Instances):
             "name": self.input_name.currentText() or "Usuário",
             "number_phone": self.input_phone.text() or "N/A",
             "highway": self.input_highway.text() or "",
-            "km": self.input_km.text() or "",
+            "km": self.input_km.text() or 0,
             "direction": self.input_direction.currentText() or "",
             "vehicle_model": self.input_vehicle_model.currentText() or "",
             "vehicle_color": self.input_vehicle_color.text() or "N/A",
