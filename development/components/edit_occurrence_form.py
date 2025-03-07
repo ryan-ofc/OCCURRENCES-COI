@@ -288,7 +288,7 @@ class OccurrenceEditForm(QDialog, Instances):
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
-            value=self.occurrence.color,
+            value=self.occurrence.local,
             default_value=True,
         )
         self.input_reference_point = CInput(
