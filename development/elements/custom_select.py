@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QComboBox, QLabel, QVBoxLayout, QHBoxLayout, QWidget
-from PySide6.QtGui import QPixmap, QPainter
+from PySide6.QtGui import QPixmap, QPainter, QFont
 from PySide6.QtCore import Qt
 from PySide6.QtSvg import QSvgRenderer
 from development.styles import Colors, Border, type_border, Padding, BorderRadius
@@ -36,6 +36,7 @@ class CSelect(QWidget, Instances):
         only_uppercase: bool = False,
         default_value: bool = False,
         value: str = None,
+        font_size: int = 10,
     ):
         super().__init__()
         Instances.__init__(
@@ -54,6 +55,7 @@ class CSelect(QWidget, Instances):
             text_color=text_color,
             padding=padding,
             border_radius=border_radius,
+            font_size=font_size,
         )
 
         self._icon_down_arrow = icon_down_arrow
@@ -85,6 +87,7 @@ class CSelect(QWidget, Instances):
             self.combo_box.setCurrentIndex(-1)
 
         self.combo_box.editTextChanged.connect(self.on_text_changed)
+        self.combo_box.setFont(QFont("Arial", self._font_size))
 
         self._toolTip = CTooltip(
             bg_color=self._bg_color,

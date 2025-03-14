@@ -173,12 +173,10 @@ class OccurrenceForm(QFrame, Instances):
             only_uppercase=True,
             no_special_chars=False,
         )
-        self.input_vehicle_model = CSelect(
+        self.input_vehicle_model = CInput(
             label="Veículo",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/carro.svg",
-            items=VEHICLES_MODELS,
-            is_editable=True,
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
@@ -279,7 +277,7 @@ class OccurrenceForm(QFrame, Instances):
         self.input_description.clear()
 
         if self.is_vehicle:
-            self.input_vehicle_model.clearText()
+            self.input_vehicle_model.clear()
             self.input_vehicle_color.clear()
             self.input_vehicle_license_plate.clear()
             self.input_vehicle_occupants.clear()
@@ -308,7 +306,7 @@ class OccurrenceForm(QFrame, Instances):
             "highway": self.input_highway.text() or "",
             "km": self.input_km.text() or 0,
             "direction": self.input_direction.currentText() or "",
-            "vehicle_model": self.input_vehicle_model.currentText() or "",
+            "vehicle_model": self.input_vehicle_model.text() or "",
             "vehicle_color": self.input_vehicle_color.text() or "N/A",
             "vehicle_license_plate": self.input_vehicle_license_plate.text() or "N/A",
             "vehicle_occupants": self.input_vehicle_occupants.text() or "N/A",
@@ -398,9 +396,10 @@ class OccurrenceForm(QFrame, Instances):
         self.add_title("─── Acidentes ───", "#C41111")
         self.input_problem.combo_box.addItems(
             [
-                "Sinistro / Saída de pista",
-                "Sinistro / Capotamento",
+                "Sinistro / Colisão",
                 "Sinistro / Tombamento",
+                "Sinistro / Capotamento",
+                "Sinistro / Saída de pista",
             ]
         )
 

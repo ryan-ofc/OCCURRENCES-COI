@@ -228,17 +228,14 @@ class OccurrenceEditForm(QDialog, Instances):
             value=self.occurrence.direction,
             default_value=True,
         )
-        self.input_vehicle_model = CSelect(
+        self.input_vehicle_model = CInput(
             label="Veículo",
             bg_color=self._input_bg_color,
             icon_path="app/icons/svg/carro.svg",
-            items=VEHICLES_MODELS,
-            is_editable=True,
             only_numbers=False,
             only_uppercase=True,
             no_special_chars=False,
             value=self.occurrence.vehicle,
-            default_value=True,
         )
         self.input_vehicle_color = CInput(
             label="Cor",
@@ -350,8 +347,8 @@ class OccurrenceEditForm(QDialog, Instances):
         }
         if self.is_vehicle:
             self.form_occurrence["vehicle_model"] = (
-                self.input_vehicle_model.currentText()
-                if self.input_vehicle_model.currentText()
+                self.input_vehicle_model.text()
+                if self.input_vehicle_model.text()
                 else "N/A"
             )
             self.form_occurrence["vehicle_color"] = (
@@ -408,7 +405,7 @@ class OccurrenceEditForm(QDialog, Instances):
             "highway": self.input_highway.text() or "",
             "km": self.input_km.text() or 0,
             "direction": self.input_direction.currentText() or "",
-            "vehicle_model": self.input_vehicle_model.currentText() or "",
+            "vehicle_model": self.input_vehicle_model.text() or "",
             "vehicle_color": self.input_vehicle_color.text() or "N/A",
             "vehicle_license_plate": self.input_vehicle_license_plate.text() or "N/A",
             "vehicle_occupants": self.input_vehicle_occupants.text() or "N/A",

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QCompleter
-from PySide6.QtGui import QPixmap, QPainter
+from PySide6.QtGui import QPixmap, QPainter, QFont
 from PySide6.QtCore import Qt
 from PySide6.QtSvg import QSvgRenderer
 from development.styles import Colors, Border, type_border, Padding, BorderRadius
@@ -33,6 +33,7 @@ class CInput(QWidget, Instances):
         no_special_chars: bool = False,
         only_uppercase: bool = False,
         value: str = None,
+        font_size: int = 10,
     ):
         super().__init__()
         Instances.__init__(
@@ -51,6 +52,7 @@ class CInput(QWidget, Instances):
             text_color=text_color,
             padding=padding,
             border_radius=border_radius,
+            font_size=font_size,
         )
 
         self._placeholder = placeholder
@@ -89,6 +91,7 @@ class CInput(QWidget, Instances):
             self.input_field.setText(str(self.value))
     
         self.input_field.textChanged.connect(self.__on_text_changed)
+        self.input_field.setFont(QFont("Arial", self._font_size))
 
     def __setup__(self):
         self.__config__()

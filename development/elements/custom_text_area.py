@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QTextEdit, QLabel, QVBoxLayout, QWidget
+from PySide6.QtGui import QFont
 from development.styles import Colors, Border, type_border, Border, Padding, BorderRadius
 from development.elements import CTooltip
 from development.model import Instances
@@ -28,6 +29,7 @@ class CTextArea(QWidget, Instances):
         no_special_chars: bool = False,
         only_uppercase: bool = False,
         value: str = None,
+        font_size: int = 10,
     ):
         super().__init__()
         Instances.__init__(
@@ -46,6 +48,7 @@ class CTextArea(QWidget, Instances):
             text_color=text_color,
             padding=padding,
             border_radius=border_radius,
+            font_size=font_size,
         )
 
         self.only_numbers = only_numbers
@@ -62,6 +65,7 @@ class CTextArea(QWidget, Instances):
             self.text_area.setText(str(self.value))
 
         self.text_area.textChanged.connect(self.__on_text_changed)
+        self.text_area.setFont(QFont("Arial", self._font_size))
         
         self._toolTip = CTooltip(
             bg_color=self._bg_color,

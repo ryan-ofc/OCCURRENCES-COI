@@ -25,6 +25,7 @@ class Instances:
         border: Border = None,
         border_radius: BorderRadius = None,
         padding: Padding = None,
+        font_size: int = None,
     ):
         self._objectName = objectName
         self._spacing = spacing
@@ -44,3 +45,4 @@ class Instances:
         self._border = border
         self._border_radius = border_radius
         self._padding = padding
+        self._font_size = font_size
