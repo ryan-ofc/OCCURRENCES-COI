@@ -134,8 +134,12 @@ class CInput(QWidget, Instances):
         self.setLayout(main_layout)
 
     def __on_text_changed(self, text: str):
+        cursor_pos = self.input_field.cursorPosition()
         filtered_text = self.apply_filters(text)
-        self.input_field.setText(filtered_text)
+        
+        if filtered_text != text:
+            self.input_field.setText(filtered_text)
+            self.input_field.setCursorPosition(cursor_pos - (len(text) - len(filtered_text)))
 
     def apply_filters(self, text: str) -> str:
         if self.only_numbers:

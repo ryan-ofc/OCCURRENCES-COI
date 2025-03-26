@@ -303,6 +303,10 @@ class CSelect(QWidget, Instances):
         self.only_uppercase = role
 
     def on_text_changed(self, text: str):
+        cursor_position = self.combo_box.lineEdit().cursorPosition()
+        filtered_text = self.apply_filters(text)
+
         self.combo_box.blockSignals(True)
-        self.combo_box.setEditText(self.apply_filters(text))
-        self.combo_box.blockSignals(False)      
+        self.combo_box.setEditText(filtered_text)
+        self.combo_box.lineEdit().setCursorPosition(cursor_position)
+        self.combo_box.blockSignals(False)    
